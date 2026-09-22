@@ -1,0 +1,156 @@
+{
+  "checks": [
+    {
+      "check": "auto orbit changes camera",
+      "pass": true
+    },
+    {
+      "check": "标注 toggles on",
+      "pass": true
+    },
+    {
+      "check": "标注 restores",
+      "pass": true
+    },
+    {
+      "check": "结构线框 toggles on",
+      "pass": true
+    },
+    {
+      "check": "结构线框 restores",
+      "pass": true
+    },
+    {
+      "check": "曲速航行 toggles on",
+      "pass": true
+    },
+    {
+      "check": "曲速航行 restores",
+      "pass": true
+    },
+    {
+      "check": "切换工作照明 toggles on",
+      "pass": true
+    },
+    {
+      "check": "切换工作照明 restores",
+      "pass": true
+    },
+    {
+      "check": "环境音效 toggles on",
+      "pass": true
+    },
+    {
+      "check": "环境音效 restores",
+      "pass": true
+    },
+    {
+      "check": "low quality",
+      "pass": true
+    },
+    {
+      "check": "high quality",
+      "pass": true
+    },
+    {
+      "check": "碟部俯视 finite camera",
+      "pass": true
+    },
+    {
+      "check": "舰体侧视 finite camera",
+      "pass": true
+    },
+    {
+      "check": "正面视角 finite camera",
+      "pass": true
+    },
+    {
+      "check": "自由视角 finite camera",
+      "pass": true
+    },
+    {
+      "check": "archive opens",
+      "pass": true
+    },
+    {
+      "check": "actual triangle count",
+      "pass": true
+    },
+    {
+      "check": "help opens",
+      "pass": true
+    },
+    {
+      "check": "standalone original HTML initializes with network disabled and zero HTTP requests",
+      "pass": true
+    },
+    {
+      "check": "offline initialization has no uncaught JS errors",
+      "pass": true
+    },
+    {
+      "check": "interiors build offline with zero HTTP requests",
+      "pass": true
+    },
+    {
+      "check": "offline geometry finite",
+      "pass": true
+    },
+    {
+      "check": "mobile has no horizontal overflow",
+      "pass": true
+    },
+    {
+      "check": "mobile walk pad visible",
+      "pass": true
+    }
+  ],
+  "requests": [],
+  "errors": [],
+  "final": {
+    "state": {
+      "mode": "exterior",
+      "room": null,
+      "labels": true,
+      "orbit": false,
+      "wire": false,
+      "warp": false,
+      "light": false,
+      "quality": "high",
+      "audio": false,
+      "transitioning": false,
+      "modal": false
+    },
+    "position": [
+      1276.8205128205125,
+      800.7179487179488,
+      -1320.1025641025642
+    ],
+    "yaw": 0.59,
+    "pitch": -0.025,
+    "geometry": {
+      "objects": 264,
+      "instances": 5590,
+      "invalidAttributes": []
+    },
+    "render": {
+      "frame": 1320,
+      "calls": 251,
+      "triangles": 89704,
+      "points": 0,
+      "lines": 0
+    },
+    "memory": {
+      "geometries": 159,
+      "textures": 29
+    },
+    "cachedRooms": [
+      "bridge"
+    ],
+    "door": null,
+    "canvas": [
+      1440,
+      1000
+    ]
+  }
+}

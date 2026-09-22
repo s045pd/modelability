@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createExterior} from '../src/exterior.js';
+const ctx=new Proxy({measureText:()=>({width:10}),createRadialGradient:()=>({addColorStop(){}}),createLinearGradient:()=>({addColorStop(){}})},{get:(t,p)=>p in t?t[p]:()=>{}});
+globalThis.document={createElement:()=>({width:0,height:0,getContext:()=>ctx})};
+test('exterior provides named ship structures and anchor navigation',()=>{const e=createExterior();assert.ok(e?.group?.isGroup);for(const n of ['saucer','secondary-hull','port-nacelle','starboard-nacelle','main-bridge'])assert.ok(e.group.getObjectByName(n),n);assert.ok(e.anchors.bridge);});
+test('all exterior positions normals and instance matrices are finite',()=>{const e=createExterior();assert.ok(e?.group?.isGroup);let vertices=0,instances=0;e.group.traverse(o=>{if(o.geometry){for(const key of ['position','normal']){const a=o.geometry.attributes[key];if(a){for(const v of a.array)assert.ok(Number.isFinite(v),`${o.name} ${key}`);}}vertices+=o.geometry.attributes.position.count;}if(o.isInstancedMesh){instances+=o.count;for(const v of o.instanceMatrix.array)assert.ok(Number.isFinite(v));}});assert.ok(vertices>30000);assert.ok(instances>1000);});

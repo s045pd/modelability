@@ -1,0 +1,17 @@
+{
+  "name": "uss-enterprise-d",
+  "version": "1.0.0",
+  "description": "程序化生成的银河级企业号 NCC-1701-D，可第一人称进入舰内",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tools/verify-geometry.mjs",
+    "start": "node tools/serve.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.169.0"
+  },
+  "type": "module"
+}

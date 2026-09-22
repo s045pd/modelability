@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>USS Enterprise NCC-1701</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Saira+Condensed:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="viewport"></div>
+
+    <div id="boot">
+      <div class="boot-frame">
+        <p class="boot-reg">NCC-1701</p>
+        <h1>USS ENTERPRISE</h1>
+        <p class="boot-class">Constitution 改装型 · 全尺寸可进入模型</p>
+        <div class="boot-bar"><span></span></div>
+        <p class="boot-hint">正在装配船体、机库与舰桥</p>
+      </div>
+    </div>
+
+    <div id="hud" class="hidden">
+      <div class="hud-tl">
+        <div class="hud-name">USS ENTERPRISE</div>
+        <div class="hud-reg">NCC-1701 · CONSTITUTION REFIT</div>
+        <div id="loc" class="hud-loc">外层空间</div>
+      </div>
+      <div class="hud-tr">
+        <div id="speed">000.0 m/s</div>
+        <div id="mode">EVA 飞行</div>
+        <div id="deck">—</div>
+      </div>
+      <div id="crosshair"></div>
+      <div class="hud-bl">
+        <span>WASD 平移</span>
+        <span>QE 升降</span>
+        <span>Shift 加速</span>
+        <span>F 行走/飞行</span>
+        <span>鼠标 观察</span>
+      </div>
+      <div class="hud-br">
+        <button data-tp="inspect">1 舷外</button>
+        <button data-tp="hangar">2 机库</button>
+        <button data-tp="engineering">3 引擎室</button>
+        <button data-tp="bridge">4 舰桥</button>
+      </div>
+      <div id="lock-hint">单击画面锁定视角 · Esc 释放</div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

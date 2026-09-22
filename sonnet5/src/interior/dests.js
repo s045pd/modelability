@@ -1,0 +1,21 @@
+// 传送 / 电梯目的地。key 对应 world.spawns 中的登记
+export const DESTS = [
+  { key: 'bridge', name: '舰桥', sub: '第 1 层 · 指挥中心', c: 'gold' },
+  { key: 'hub', name: '中央枢纽', sub: '第 4 层 · 涡轮电梯厅', c: 'orange' },
+  { key: 'ring', name: '环形走廊', sub: '第 4 层 · 主通道', c: 'orange' },
+  { key: 'lounge', name: '观景休息室', sub: '第 4 层 · 舰艏', c: 'blue' },
+  { key: 'briefing', name: '会议室', sub: '第 4 层 · 右前', c: 'blue' },
+  { key: 'transporter', name: '传送室', sub: '第 4 层 · 右舷', c: 'violet' },
+  { key: 'captain', name: '舰长舱', sub: '第 4 层 · 右后', c: 'gold' },
+  { key: 'crew', name: '船员舱', sub: '第 4 层 · 舰艉', c: 'blue' },
+  { key: 'sickbay', name: '医疗湾', sub: '第 4 层 · 左后', c: 'red' },
+  { key: 'brig', name: '保安室 · 禁闭室', sub: '第 4 层 · 左舷', c: 'red' },
+  { key: 'lab', name: '科学实验室', sub: '第 4 层 · 左前', c: 'violet' },
+  { key: 'rec', name: '娱乐室 · 餐厅', sub: '第 4 层 · 内区', c: 'orange' },
+  { key: 'gym', name: '健身房', sub: '第 4 层 · 内区', c: 'orange' },
+  { key: 'library', name: '图书馆 · 档案室', sub: '第 4 层 · 内区', c: 'violet' },
+  { key: 'hydro', name: '水培植物园', sub: '第 4 层 · 内区', c: 'blue' },
+  { key: 'engineering', name: '轮机舱', sub: '副船体 · 曲速核心', c: 'red' },
+  { key: 'shuttlebay', name: '穿梭机库', sub: '副船体 · 舰艉', c: 'orange' },
+  { key: 'nacelle', name: '曲速舱维修隧道', sub: '右舷曲速舱内部', c: 'violet' },
+];

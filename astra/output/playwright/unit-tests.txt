@@ -1,0 +1,188 @@
+
+> enterprise-d-atlas@1.0.0 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: single HTML ships all executable code and no network dependencies
+ok 1 - single HTML ships all executable code and no network dependencies
+  ---
+  duration_ms: 2.720958
+  type: 'test'
+  ...
+# Subtest: all promised exploration and control entry points are present
+ok 2 - all promised exploration and control entry points are present
+  ---
+  duration_ms: 2.451459
+  type: 'test'
+  ...
+# Subtest: touch movement is available on tablets independent of viewport width
+ok 3 - touch movement is available on tablets independent of viewport width
+  ---
+  duration_ms: 0.589958
+  type: 'test'
+  ...
+# Subtest: exterior provides named ship structures and anchor navigation
+ok 4 - exterior provides named ship structures and anchor navigation
+  ---
+  duration_ms: 163.103
+  type: 'test'
+  ...
+# Subtest: all exterior positions normals and instance matrices are finite
+ok 5 - all exterior positions normals and instance matrices are finite
+  ---
+  duration_ms: 124.217541
+  type: 'test'
+  ...
+# Subtest: saucer center and perimeter have finite joined profiles
+ok 6 - saucer center and perimeter have finite joined profiles
+  ---
+  duration_ms: 1.822209
+  type: 'test'
+  ...
+# Subtest: walkable floor union admits corridor and rejects hull exterior
+ok 7 - walkable floor union admits corridor and rejects hull exterior
+  ---
+  duration_ms: 0.136875
+  type: 'test'
+  ...
+# Subtest: wall stops large movements without tunneling
+ok 8 - wall stops large movements without tunneling
+  ---
+  duration_ms: 0.529625
+  type: 'test'
+  ...
+# Subtest: solid furniture prevents crossing even with high delta
+ok 9 - solid furniture prevents crossing even with high delta
+  ---
+  duration_ms: 0.211167
+  type: 'test'
+  ...
+# Subtest: movement slides along a wall
+ok 10 - movement slides along a wall
+  ---
+  duration_ms: 0.110792
+  type: 'test'
+  ...
+# Subtest: corridor doorway connects physically
+ok 11 - corridor doorway connects physically
+  ---
+  duration_ms: 0.222083
+  type: 'test'
+  ...
+# Subtest: occupied door threshold is detected before closing
+ok 12 - occupied door threshold is detected before closing
+  ---
+  duration_ms: 0.121583
+  type: 'test'
+  ...
+# Subtest: portrait framing backs the camera out rather than cropping the ship
+ok 13 - portrait framing backs the camera out rather than cropping the ship
+  ---
+  duration_ms: 0.143125
+  type: 'test'
+  ...
+# Subtest: interiors exports the room constructor
+ok 14 - interiors exports the room constructor
+  ---
+  duration_ms: 0.550167
+  type: 'test'
+  ...
+# Subtest: bridge has valid walkable spawn, owned lights, furnished finite geometry and bounded rendering cost
+ok 15 - bridge has valid walkable spawn, owned lights, furnished finite geometry and bounded rendering cost
+  ---
+  duration_ms: 51.219125
+  type: 'test'
+  ...
+# Subtest: engineering has valid walkable spawn, owned lights, furnished finite geometry and bounded rendering cost
+ok 16 - engineering has valid walkable spawn, owned lights, furnished finite geometry and bounded rendering cost
+  ---
+  duration_ms: 16.26525
+  type: 'test'
+  ...
+# Subtest: hangar has valid walkable spawn, owned lights, furnished finite geometry and bounded rendering cost
+ok 17 - hangar has valid walkable spawn, owned lights, furnished finite geometry and bounded rendering cost
+  ---
+  duration_ms: 9.42825
+  type: 'test'
+  ...
+# Subtest: bridge has 3 command seats, two helm stations, tactical horseshoe, LCARS and viewscreen
+ok 18 - bridge has 3 command seats, two helm stations, tactical horseshoe, LCARS and viewscreen
+  ---
+  duration_ms: 13.031042
+  type: 'test'
+  ...
+# Subtest: bridge corridor is physically connected and an operable door changes collision
+ok 19 - bridge corridor is physically connected and an operable door changes collision
+  ---
+  duration_ms: 17.453666
+  type: 'test'
+  ...
+# Subtest: engineering and hangar provide distinctive core and shuttle architecture
+ok 20 - engineering and hangar provide distinctive core and shuttle architecture
+  ---
+  duration_ms: 14.964125
+  type: 'test'
+  ...
+# Subtest: invalid room names fail explicitly rather than returning an undefined scene
+ok 21 - invalid room names fail explicitly rather than returning an undefined scene
+  ---
+  duration_ms: 0.283292
+  type: 'test'
+  ...
+# Subtest: custom shuttle hulls expose outward faces rather than invisible inverted shells
+ok 22 - custom shuttle hulls expose outward faces rather than invisible inverted shells
+  ---
+  duration_ms: 6.051834
+  type: 'test'
+  ...
+# Subtest: each interior owns one bounded shadow-producing key light for grounded furnishings
+ok 23 - each interior owns one bounded shadow-producing key light for grounded furnishings
+  ---
+  duration_ms: 24.1135
+  type: 'test'
+  ...
+# Subtest: core containment railing prevents walking through its front safety perimeter
+ok 24 - core containment railing prevents walking through its front safety perimeter
+  ---
+  duration_ms: 5.107541
+  type: 'test'
+  ...
+# Subtest: warp plasma segments are externally visible instead of enclosed by the steel support
+ok 25 - warp plasma segments are externally visible instead of enclosed by the steel support
+  ---
+  duration_ms: 7.872208
+  type: 'test'
+  ...
+# Subtest: bridge viewscreen backing blocks movement before a visitor crosses the screen surface
+ok 26 - bridge viewscreen backing blocks movement before a visitor crosses the screen surface
+  ---
+  duration_ms: 8.782458
+  type: 'test'
+  ...
+# Subtest: bridge arrival is a clear three-quarter composition rather than a close-up of a chair back
+ok 27 - bridge arrival is a clear three-quarter composition rather than a close-up of a chair back
+  ---
+  duration_ms: 14.271833
+  type: 'test'
+  ...
+# Subtest: command chairs have rounded upholstered profiles and individually constructed seams
+ok 28 - command chairs have rounded upholstered profiles and individually constructed seams
+  ---
+  duration_ms: 9.801875
+  type: 'test'
+  ...
+# Subtest: new forward inset wall assemblies remain solid at both sides of the viewscreen
+ok 29 - new forward inset wall assemblies remain solid at both sides of the viewscreen
+  ---
+  duration_ms: 8.843916
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 353.031

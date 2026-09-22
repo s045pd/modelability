@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>USS Enterprise NCC-1701</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="./src/ui/ui.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="loading"><div class="ld-inner"><div class="ld-reg">NCC-1701</div><div class="ld-bar"><i id="ld-fill"></i></div><div id="ld-text">正在构建舰体…</div></div></div>
+
+<main id="title" hidden>
+  <div class="t-elbow"></div>
+  <div class="t-body">
+    <p class="t-kicker">联邦星舰 · 宪法级 · 1:1</p>
+    <h1>U.S.S. <b>ENTERPRISE</b></h1>
+    <p class="t-reg">NCC-1701</p>
+    <div class="t-actions">
+      <button id="btn-fly" class="pill orange">外部巡游</button>
+      <button id="btn-enter" class="pill blue">进入飞船</button>
+      <button id="btn-bridge" class="pill gold">直达舰桥</button>
+    </div>
+    <ul class="t-keys">
+      <li><kbd>W A S D</kbd> 移动</li>
+      <li><kbd>鼠标</kbd> 视角（点击画面锁定）</li>
+      <li><kbd>Shift</kbd> 加速</li>
+      <li><kbd>Q</kbd><kbd>E</kbd> 外部模式升降 / <kbd>E</kbd> 交互</li>
+      <li><kbd>Tab</kbd> 切换外部/舰内</li>
+      <li><kbd>M</kbd> 传送地图</li>
+    </ul>
+  </div>
+</main>
+
+<div id="hud" hidden>
+  <canvas id="mini"></canvas>
+  <div id="cross"></div>
+  <div id="loc"><span id="loc-deck"></span><span id="loc-name"></span></div>
+  <div id="prompt" hidden></div>
+  <div id="hint">M 传送地图 · Tab 切换外部/舰内 · Esc 菜单</div>
+  <div id="fade"></div>
+</div>
+
+<div id="map" hidden>
+  <div class="map-head"><span>舰内定位 / 传送</span><button id="map-close" class="pill small">关闭</button></div>
+  <div id="map-list"></div>
+</div>
+
+<div id="lift" hidden>
+  <div class="lift-head">涡轮电梯 · 选择目的地</div>
+  <div id="lift-list"></div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

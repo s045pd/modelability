@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USS Enterprise NCC-1701-D — Interactive 3D Explorer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="loading-screen">
+    <div class="loader-content">
+      <div class="lcars-border">
+        <div class="lcars-bar"></div>
+        <div class="lcars-bar"></div>
+        <div class="lcars-bar"></div>
+      </div>
+      <h1>USS ENTERPRISE NCC-1701-D</h1>
+      <p id="loading-status">初始化子空间传感器阵列...</p>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="main-canvas"></canvas>
+
+  <div id="hud" class="hidden">
+    <!-- Top bar -->
+    <div id="top-bar">
+      <div class="lcars-frame top-left"></div>
+      <div id="ship-name">USS ENTERPRISE NCC-1701-D</div>
+      <div class="lcars-frame top-right"></div>
+    </div>
+
+    <!-- Location display -->
+    <div id="location-display">
+      <span id="current-deck">甲板 1</span>
+      <span class="separator">|</span>
+      <span id="current-room">主舰桥</span>
+    </div>
+
+    <!-- Mode switch -->
+    <div id="mode-panel">
+      <button id="btn-exterior" class="mode-btn active" title="外部轨道视角">
+        <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="8" stroke="currentColor" fill="none" stroke-width="1.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="currentColor" stroke-width="1.5"/></svg>
+        外部视角
+      </button>
+      <button id="btn-interior" class="mode-btn" title="内部第一人称探索">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 4a4 4 0 014 4c0 2-2 3-4 5-2-2-4-3-4-5a4 4 0 014-4z" stroke="currentColor" fill="none" stroke-width="1.5"/><path d="M5 20l3-6h8l3 6" stroke="currentColor" fill="none" stroke-width="1.5"/></svg>
+        进入飞船
+      </button>
+    </div>
+
+    <!-- Interior teleport menu -->
+    <div id="teleport-menu" class="hidden">
+      <h3>涡轮电梯 — 选择目的地</h3>
+      <button class="teleport-btn" data-target="bridge">主舰桥 (甲板 1)</button>
+      <button class="teleport-btn" data-target="observation">观察室 (甲板 1)</button>
+      <button class="teleport-btn" data-target="tenforward">十前进酒吧 (甲板 10)</button>
+      <button class="teleport-btn" data-target="quarters">船员宿舍 (甲板 8)</button>
+      <button class="teleport-btn" data-target="engineering">主工程部 (甲板 36)</button>
+      <button class="teleport-btn" data-target="corridor1">1号走廊 (甲板 8)</button>
+    </div>
+
+    <!-- Controls help -->
+    <div id="controls-help">
+      <div id="exterior-help">
+        <span>🖱️ 拖拽旋转</span>
+        <span>🔍 滚轮缩放</span>
+        <span>右键 平移</span>
+      </div>
+      <div id="interior-help" class="hidden">
+        <span>W/A/S/D 移动</span>
+        <span>鼠标 视角</span>
+        <span>E 交互/开门</span>
+        <span>T 涡轮电梯</span>
+        <span>ESC 退出</span>
+      </div>
+    </div>
+
+    <!-- Crosshair for FPS mode -->
+    <div id="crosshair" class="hidden">
+      <div class="ch-h"></div>
+      <div class="ch-v"></div>
+    </div>
+
+    <!-- Interaction prompt -->
+    <div id="interact-prompt" class="hidden">
+      按 E 键交互
+    </div>
+
+    <!-- Red Alert -->
+    <button id="btn-red-alert" class="hidden" title="红色警报">🔴 红色警报</button>
+
+    <!-- FPS counter -->
+    <div id="fps-counter">FPS: --</div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

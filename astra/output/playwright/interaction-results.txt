@@ -1,0 +1,22 @@
+### Result
+[{"test":"approach-door","state":{"mode":"interior","room":"corridor","labels":true,"orbit":false,"wire":false,"warp":false,"light":false,"quality":"high","audio":false,"transitioning":false,"modal":false},"position":[6.8,1.68,11.116570000000031],"yaw":3.141592653589793,"pitch":0,"geometry":{"objects":264,"instances":5590,"invalidAttributes":[]},"render":{"frame":79410,"calls":164,"triangles":46930,"points":0,"lines":0},"memory":{"geometries":176,"textures":38},"cachedRooms":["bridge"],"door":{"label":"Deck 01 • Corridor","isOpen":false},"canvas":[1440,1000]},{"test":"open-and-enter-door-threshold","state":{"mode":"interior","room":"corridor","labels":true,"orbit":false,"wire":false,"warp":false,"light":false,"quality":"high","audio":false,"transitioning":false,"modal":false},"position":[6.8,1.68,9.231860000000024],"yaw":3.141592653589793,"pitch":0,"geometry":{"objects":264,"instances":5590,"invalidAttributes":[]},"render":{"frame":79995,"calls":164,"triangles":46930,"points":0,"lines":0},"memory":{"geometries":176,"textures":38},"cachedRooms":["bridge"],"door":{"label":"Deck 01 • Corridor","isOpen":true},"canvas":[1440,1000]},{"test":"occupied-close-safety","toast":"请先离开舱门通道，安全联锁阻止关门","state":{"mode":"interior","room":"corridor","labels":true,"orbit":false,"wire":false,"warp":false,"light":false,"quality":"high","audio":false,"transitioning":false,"modal":false},"position":[6.8,1.68,9.231860000000024],"yaw":3.141592653589793,"pitch":0,"geometry":{"objects":264,"instances":5590,"invalidAttributes":[]},"render":{"frame":80010,"calls":164,"triangles":46930,"points":0,"lines":0},"memory":{"geometries":176,"textures":38},"cachedRooms":["bridge"],"door":{"label":"Deck 01 • Corridor","isOpen":true},"canvas":[1440,1000]},{"test":"physical-corridor-to-bridge","state":{"mode":"interior","room":"bridge","labels":true,"orbit":false,"wire":false,"warp":false,"light":false,"quality":"high","audio":false,"transitioning":false,"modal":false},"position":[6.8,1.68,5.461860000000035],"yaw":3.141592653589793,"pitch":0,"geometry":{"objects":264,"instances":5590,"invalidAttributes":[]},"render":{"frame":81195,"calls":168,"triangles":46938,"points":0,"lines":0},"memory":{"geometries":180,"textures":40},"cachedRooms":["bridge"],"door":null,"canvas":[1440,1000]},{"test":"reach-turbolift","state":{"mode":"interior","room":"corridor","labels":true,"orbit":false,"wire":false,"warp":false,"light":false,"quality":"high","audio":false,"transitioning":false,"modal":false},"position":[6.8,1.68,32.52756000000035],"yaw":3.141592653589793,"pitch":0,"geometry":{"objects":264,"instances":5590,"invalidAttributes":[]},"render":{"frame":87315,"calls":140,"triangles":46394,"points":0,"lines":0},"memory":{"geometries":180,"textures":40},"cachedRooms":["bridge"],"door":{"label":"涡轮升降机 · 选择甲板"},"canvas":[1440,1000]},{"test":"turbolift-opens","open":"modal-backdrop open"}]
+### Ran Playwright code
+```js
+await (async page => {
+ const out=[];
+ const diag=()=>page.evaluate(()=>window.enterpriseDiagnostics());
+ const settled=()=>page.waitForFunction(()=>!window.enterpriseDiagnostics().state.transitioning&&getComputedStyle(document.getElementById('fade')).opacity==='0');
+ const room=async(name,kind)=>{await page.getByRole('button',{name,exact:true}).click();await page.waitForFunction(k=>window.enterpriseDiagnostics().state.room===k,kind);await settled();};
+ const walk=async(key,ms)=>{await page.keyboard.down(key);await page.waitForTimeout(ms);await page.keyboard.up(key);};
+ await room('01舰内走廊','corridor');
+ await walk('s',1150);out.push({test:'approach-door',...(await diag())});
+ await page.keyboard.press('e');await walk('s',650);out.push({test:'open-and-enter-door-threshold',...(await diag())});
+ await page.keyboard.press('e');out.push({test:'occupied-close-safety',toast:await page.locator('#toast').textContent(),...(await diag())});
+ await walk('s',1300);out.push({test:'physical-corridor-to-bridge',...(await diag())});
+ await room('01舰内走廊','corridor');await walk('w',6200);out.push({test:'reach-turbolift',...(await diag())});
+ await page.keyboard.press('e');out.push({test:'turbolift-opens',open:await page.locator('#transportModal').getAttribute('class')});await page.keyboard.press('Escape');
+ for(const [name,kind] of [['36轮机舱','engineering'],['04穿梭机库','hangar'],['01舰内走廊','corridor']]){await room(name,kind);await page.screenshot({path:`output/playwright/${kind}-verified.png`});}
+ return out;
+}
+)(page);
+```

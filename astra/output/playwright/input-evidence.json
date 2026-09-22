@@ -1,0 +1,18 @@
+[
+  {
+    "test": "drag look",
+    "pass": true
+  },
+  {
+    "test": "pointer lock",
+    "pass": true
+  },
+  {
+    "test": "escape releases lock",
+    "pass": true
+  },
+  {
+    "test": "touch pad pointer hold moves player",
+    "pass": true
+  }
+]

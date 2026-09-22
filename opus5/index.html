@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>U.S.S. Enterprise NCC-1701-D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="src/ui/hud.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="viewport"></canvas>
+
+<div id="boot" class="boot">
+  <div class="boot-frame">
+    <div class="boot-bar"><span></span><span></span><span></span></div>
+    <h1>U.S.S. ENTERPRISE</h1>
+    <h2>NCC-1701-D &middot; GALAXY CLASS</h2>
+    <div class="boot-meter"><i id="boot-fill"></i></div>
+    <p id="boot-log">INITIALIZING STRUCTURAL INTEGRITY FIELD</p>
+  </div>
+</div>
+
+<div id="hud" class="hud" hidden>
+  <div class="hud-corner tl">
+    <div class="pill amber" id="mode-pill">EXTERNAL VIEW</div>
+    <div class="readout" id="readout"></div>
+  </div>
+
+  <div class="hud-corner tr">
+    <div class="lcars-stack">
+      <button class="lcars-btn" data-goto="exterior">外部视角</button>
+      <button class="lcars-btn" data-goto="bridge">主舰桥</button>
+      <button class="lcars-btn" data-goto="engineering">主工程部</button>
+      <button class="lcars-btn" data-goto="tenforward">十前酒廊</button>
+      <button class="lcars-btn" data-goto="transporter">传送室</button>
+      <button class="lcars-btn" data-goto="shuttlebay">穿梭机舱</button>
+      <button class="lcars-btn" data-goto="corridor">主走廊</button>
+    </div>
+  </div>
+
+  <div class="hud-corner bl">
+    <div class="keys" id="keys"></div>
+  </div>
+
+  <div class="hud-corner br">
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="crosshair" id="crosshair" hidden></div>
+  <div class="prompt" id="prompt" hidden></div>
+  <div class="center-note" id="center-note" hidden>点击画面以锁定鼠标 · ESC 退出</div>
+
+  <div class="turbolift" id="turbolift" hidden>
+    <div class="tl-head">TURBOLIFT · 目的地</div>
+    <ul class="tl-list" id="tl-list"></ul>
+    <div class="tl-foot">按数字键选择 · ESC 取消</div>
+  </div>
+
+  <div class="transit" id="transit" hidden>
+    <div class="transit-bar"><i></i></div>
+    <div class="transit-label" id="transit-label">TURBOLIFT</div>
+  </div>
+</div>
+
+<div id="fade" class="fade"></div>
+
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# OS
+.DS_Store
+
+# Node
+node_modules/
+
+# Build/test tooling artifacts
+.playwright-cli/
+.vite/
+.npm-cache/
+.playwright-browsers/
+*.log
+
+# 主题跑偏，本轮暂不纳入模型对比（鹈鹕骑自行车，非企业号飞船）
+gemini3.8flash/

@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {saucerHeight, insideBounds, moveWithCollision} from '../src/geometry.js';
+const floor=[{minX:-5,maxX:5,minZ:-5,maxZ:5},{minX:-1.5,maxX:1.5,minZ:4,maxZ:12}];
+test('saucer center and perimeter have finite joined profiles',()=>{for(let i=0;i<=1000;i++){const r=i/1000;for(const s of [1,-1])assert.ok(Number.isFinite(saucerHeight(r,s)));}assert.ok(saucerHeight(0,1)>saucerHeight(0,-1));assert.equal(saucerHeight(1,1),saucerHeight(1,-1));});
+test('walkable floor union admits corridor and rejects hull exterior',()=>{assert.equal(insideBounds(0,5,floor,.25),true);assert.equal(insideBounds(4,10,floor,.25),false);assert.equal(insideBounds(4.9,0,floor,.25),false);});
+test('wall stops large movements without tunneling',()=>{const p=moveWithCollision({x:0,z:0},{x:20,z:0},floor,[],.3);assert.ok(p.x>4 && p.x<=4.71);});
+test('solid furniture prevents crossing even with high delta',()=>{const p=moveWithCollision({x:0,z:0},{x:4,z:0},floor,[{minX:1,maxX:2,minZ:-1,maxZ:1}],.3);assert.ok(p.x<.71);});
+test('movement slides along a wall',()=>{const p=moveWithCollision({x:4.6,z:0},{x:3,z:2},floor,[],.3);assert.ok(p.x<=4.71);assert.ok(p.z>1.8);});
+test('corridor doorway connects physically',()=>{const p=moveWithCollision({x:0,z:3},{x:0,z:7},floor,[],.3);assert.ok(Math.abs(p.z-10)<.01);});
+test('occupied door threshold is detected before closing',async()=>{const {doorwayOccupied}=await import('../src/geometry.js');assert.equal(typeof doorwayOccupied,'function');assert.equal(doorwayOccupied({x:6.8,z:9},[6.8,1.3,9]),true);assert.equal(doorwayOccupied({x:6.8,z:10.5},[6.8,1.3,9]),false);assert.equal(doorwayOccupied({x:3,z:9},[6.8,1.3,9]),false);});
+test('portrait framing backs the camera out rather than cropping the ship',async()=>{const {cameraFitScale}=await import('../src/geometry.js');assert.equal(typeof cameraFitScale,'function');assert.equal(cameraFitScale(1440,1000),1);assert.ok(cameraFitScale(390,844)>2);assert.ok(cameraFitScale(740,844)>=1.3);});

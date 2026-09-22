@@ -1,0 +1,9 @@
+### Result
+{"requests":[],"errors":[],"geometry":{"objects":264,"instances":5590,"invalidAttributes":[]}}
+### Ran Playwright code
+```js
+await (async page => { const html=await(await page.request.get("http://127.0.0.1:8765/index.html")).text(); const requests=[],errors=[]; page.on("request",r=>{if(/^https?:/.test(r.url()))requests.push(r.url())});page.on("pageerror",e=>errors.push(e.message)); await page.goto("about:blank");await page.context().setOffline(true);await page.setContent(html);await page.waitForFunction(()=>window.__enterpriseReady===true);await page.getByRole("button",{name:"舱内探索",exact:true}).click();await page.waitForFunction(()=>window.enterpriseDiagnostics().state.mode==="interior"&&!window.enterpriseDiagnostics().state.transitioning);const result={requests,errors,geometry:await page.evaluate(()=>window.enterpriseDiagnostics().geometry)};await page.context().setOffline(false);return result; })(page);
+```
+### Page
+- Page URL: about:blank
+- Page Title: ENTERPRISE — 星际舰队探索档案
