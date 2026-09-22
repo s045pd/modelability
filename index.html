@@ -339,24 +339,24 @@
   "use strict";
 
   // 模型配置：key 用于 URL hash，path 是相对本页的入口地址
-  // 标签顺序按各模型的公开发布日期排列
+  // 标签顺序按各模型的公开发布日期排列，最新的在最左边
   var MODELS = [
-    { key:"opus46",  name:"OPUS 4.6",accent:"#e0776f", path:"opus4.6/", date:"2026-02-05",
-      flag:"多文件 · CDN", note:"opus4.6（发布于 2026-02-05）— index.html + 独立 js/css，Three.js 走 jsdelivr CDN importmap，静态托管无需改动。" },
-    { key:"gemini31", name:"GEMINI 3.1 PRO",accent:"#4a90d9", path:"gemini3.1pro/enterprise.html", date:"2026-02-19",
-      flag:"单文件 · CDN", note:"gemini3.1pro（发布于 2026-02-19）— 单个 enterprise.html，importmap 经 unpkg 加载 Three.js。" },
-    { key:"sonnet5", name:"SONNET 5",accent:"#cc99cc", path:"sonnet5/", date:"2026-06-30",
-      flag:"多文件 · CDN", note:"sonnet5（发布于 2026-06-30）— importmap 已改为 jsdelivr CDN；原版 src/interior/rooms/shell.js:14 调用的未定义函数 backWindowWall（后墙开窗）已补上，「舰长舱」「观景休息室」窗户均正常渲染。" },
-    { key:"opus5",   name:"OPUS 5",  accent:"#9e9be0", path:"opus5/", date:"2026-07-24",
-      flag:"多文件 · CDN", note:"opus5（发布于 2026-07-24）— 原 importmap 指向本机 /node_modules/three，部署会 404，已改为 jsdelivr CDN。场景包含约 1900 扇独立舷窗，加载和首次渲染可能需要 10~20 秒。" },
-    { key:"grok46",  name:"GROK 4.6",accent:"#6fb1e0", path:"grok4.6/dist/", date:"2026-08-12",
-      flag:"Vite 构建产物", note:"grok4.6（发布于 2026-08-12）— Vite 工程，演示用 npm run build 产出的 dist/；base 已改为相对路径以适配子目录部署。" },
-    { key:"gemini38", name:"GEMINI 3.8 FLASH",accent:"#5fd4a3", path:"gemini3.8flash/", date:"2026-09-02",
-      flag:"单文件 · CDN", note:"gemini3.8flash（发布于 2026-09-02）— 单个 index.html，Three.js r128 经 cdnjs/jsdelivr 引入，静态托管无需改动。" },
+    { key:"grok47",  name:"GROK 4.7",accent:"#d9a566", path:"grok4.7/enterprise.html", date:"2026-09-21",
+      flag:"单文件", note:"grok4.7（发布于 2026-09-21）— 单个 enterprise.html（非 index.html），内部用 <script type=\"module\"> + importmap 加载 Three.js。" },
     { key:"astra",   name:"ASTRA (GPT-6)",accent:"#ffb454", path:"astra/", date:"2026-09-03",
       flag:"单文件 · ~0.8MB", note:"astra（GPT-6 Astra，发布于 2026-09-03）— 单个 index.html 内嵌全部代码/纹理/音效，build.mjs 打包生成，唯一严格满足“单文件”要求的实现。" },
-    { key:"grok47",  name:"GROK 4.7",accent:"#d9a566", path:"grok4.7/enterprise.html", date:"2026-09-21",
-      flag:"单文件", note:"grok4.7（发布于 2026-09-21）— 单个 enterprise.html（非 index.html），内部用 <script type=\"module\"> + importmap 加载 Three.js。" }
+    { key:"gemini38", name:"GEMINI 3.8 FLASH",accent:"#5fd4a3", path:"gemini3.8flash/", date:"2026-09-02",
+      flag:"单文件 · CDN", note:"gemini3.8flash（发布于 2026-09-02）— 单个 index.html，Three.js r128 经 cdnjs/jsdelivr 引入，静态托管无需改动。" },
+    { key:"grok46",  name:"GROK 4.6",accent:"#6fb1e0", path:"grok4.6/dist/", date:"2026-08-12",
+      flag:"Vite 构建产物", note:"grok4.6（发布于 2026-08-12）— Vite 工程，演示用 npm run build 产出的 dist/；base 已改为相对路径以适配子目录部署。" },
+    { key:"opus5",   name:"OPUS 5",  accent:"#9e9be0", path:"opus5/", date:"2026-07-24",
+      flag:"多文件 · CDN", note:"opus5（发布于 2026-07-24）— 原 importmap 指向本机 /node_modules/three，部署会 404，已改为 jsdelivr CDN。场景包含约 1900 扇独立舷窗，加载和首次渲染可能需要 10~20 秒。" },
+    { key:"sonnet5", name:"SONNET 5",accent:"#cc99cc", path:"sonnet5/", date:"2026-06-30",
+      flag:"多文件 · CDN", note:"sonnet5（发布于 2026-06-30）— importmap 已改为 jsdelivr CDN；原版 src/interior/rooms/shell.js:14 调用的未定义函数 backWindowWall（后墙开窗）已补上，「舰长舱」「观景休息室」窗户均正常渲染。" },
+    { key:"gemini31", name:"GEMINI 3.1 PRO",accent:"#4a90d9", path:"gemini3.1pro/enterprise.html", date:"2026-02-19",
+      flag:"单文件 · CDN", note:"gemini3.1pro（发布于 2026-02-19）— 单个 enterprise.html，importmap 经 unpkg 加载 Three.js。" },
+    { key:"opus46",  name:"OPUS 4.6",accent:"#e0776f", path:"opus4.6/", date:"2026-02-05",
+      flag:"多文件 · CDN", note:"opus4.6（发布于 2026-02-05）— index.html + 独立 js/css，Three.js 走 jsdelivr CDN importmap，静态托管无需改动。" }
   ];
 
   var tabsEl = document.getElementById("tabs");

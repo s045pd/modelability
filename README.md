@@ -8,20 +8,24 @@
 
 > 提示词的隐含要求之一是"单个 HTML 文件"（不依赖构建工具即可双击打开）。下表标注了每个模型是否真的做到了这一点。
 
+## 演示录屏
+
+<video src="media/demo.mp4" controls muted playsinline width="100%"></video>
+
 ## 在线演示
 
-下表按各模型的公开发布日期排序（首页 tab 顺序与此一致）。
+下表按各模型的公开发布日期排序，最新的在最上面（首页 tab 顺序与此一致）。
 
 | 发布日期 | 模型目录 | 在线演示 | 是否单 HTML 文件 | 备注 |
 |---|---|---|---|---|
-| 2026-02-05 | [opus4.6](opus4.6/) | [Demo](https://s045pd.github.io/modelability/opus4.6/) | ❌ 否（`index.html` + `js/*.js` + `styles.css`） | Three.js 走 CDN importmap，静态托管无需改动 |
-| 2026-02-19 | [gemini3.1pro](gemini3.1pro/) | [Demo](https://s045pd.github.io/modelability/gemini3.1pro/enterprise.html) | ✅ 是（`enterprise.html` 单文件，内部用 `<script type="module">` + importmap） | Three.js 经 unpkg 加载 |
-| 2026-06-30 | [sonnet5](sonnet5/) | [Demo](https://s045pd.github.io/modelability/sonnet5/) | ❌ 否（`index.html` + `src/**/*.js`） | 已把 importmap 改成 jsdelivr CDN（`three@0.186.0`）修好部署路径问题；另外原版 `src/interior/rooms/shell.js:14` 调用了从未定义的函数 `backWindowWall`（模型自身代码 bug，加载即崩溃白屏），已补上该函数（后墙开窗+窗框+防撞玻璃），确认「舰长舱」「观景休息室」两处窗户均正常渲染 |
-| 2026-07-24 | [opus5](opus5/) | [Demo](https://s045pd.github.io/modelability/opus5/) | ❌ 否（`index.html` + `src/**/*.js`） | 原版 importmap 指向本机 `/node_modules/three/...`，部署到子路径会 404；已改成 jsdelivr CDN（对应本地锁定的 `three@0.169.0`） |
-| 2026-08-12 | [grok4.6](grok4.6/) | [Demo](https://s045pd.github.io/modelability/grok4.6/dist/) | ❌ 否（`index.html` + 独立 `src/*.js`/`*.css`，需 Vite 开发服务器） | 已用 `npm run build` 产出 `dist/`，并把 `vite.config.js` 的 `base` 改成 `'./'` 让打包产物支持部署在子路径下 |
-| 2026-09-02 | [gemini3.8flash](gemini3.8flash/) | [Demo](https://s045pd.github.io/modelability/gemini3.8flash/) | ✅ 是（单个 `index.html`，Three.js r128 经 cdnjs/jsdelivr `<script>` 引入） | 首版内容跑偏成"鹈鹕骑自行车"，已重做为企业号飞船主题，静态托管无需改动 |
-| 2026-09-03 | [astra](astra/)（GPT-6 Astra） | [Demo](https://s045pd.github.io/modelability/astra/) | ✅ 是（`index.html` 约 0.8MB，代码/纹理/音效全内嵌，`build.mjs` 打包生成） | 唯一严格满足"单文件"要求且不依赖模块加载的实现 |
 | 2026-09-21 | [grok4.7](grok4.7/) | [Demo](https://s045pd.github.io/modelability/grok4.7/enterprise.html) | ✅ 是（`enterprise.html` 单文件，内部用 `<script type="module">` + importmap） | 文件名不是 `index.html`，需要走完整路径访问 |
+| 2026-09-03 | [astra](astra/)（GPT-6 Astra） | [Demo](https://s045pd.github.io/modelability/astra/) | ✅ 是（`index.html` 约 0.8MB，代码/纹理/音效全内嵌，`build.mjs` 打包生成） | 唯一严格满足"单文件"要求且不依赖模块加载的实现 |
+| 2026-09-02 | [gemini3.8flash](gemini3.8flash/) | [Demo](https://s045pd.github.io/modelability/gemini3.8flash/) | ✅ 是（单个 `index.html`，Three.js r128 经 cdnjs/jsdelivr `<script>` 引入） | 首版内容跑偏成"鹈鹕骑自行车"，已重做为企业号飞船主题，静态托管无需改动 |
+| 2026-08-12 | [grok4.6](grok4.6/) | [Demo](https://s045pd.github.io/modelability/grok4.6/dist/) | ❌ 否（`index.html` + 独立 `src/*.js`/`*.css`，需 Vite 开发服务器） | 已用 `npm run build` 产出 `dist/`，并把 `vite.config.js` 的 `base` 改成 `'./'` 让打包产物支持部署在子路径下 |
+| 2026-07-24 | [opus5](opus5/) | [Demo](https://s045pd.github.io/modelability/opus5/) | ❌ 否（`index.html` + `src/**/*.js`） | 原版 importmap 指向本机 `/node_modules/three/...`，部署到子路径会 404；已改成 jsdelivr CDN（对应本地锁定的 `three@0.169.0`） |
+| 2026-06-30 | [sonnet5](sonnet5/) | [Demo](https://s045pd.github.io/modelability/sonnet5/) | ❌ 否（`index.html` + `src/**/*.js`） | 已把 importmap 改成 jsdelivr CDN（`three@0.186.0`）修好部署路径问题；另外原版 `src/interior/rooms/shell.js:14` 调用了从未定义的函数 `backWindowWall`（模型自身代码 bug，加载即崩溃白屏），已补上该函数（后墙开窗+窗框+防撞玻璃），确认「舰长舱」「观景休息室」两处窗户均正常渲染 |
+| 2026-02-19 | [gemini3.1pro](gemini3.1pro/) | [Demo](https://s045pd.github.io/modelability/gemini3.1pro/enterprise.html) | ✅ 是（`enterprise.html` 单文件，内部用 `<script type="module">` + importmap） | Three.js 经 unpkg 加载 |
+| 2026-02-05 | [opus4.6](opus4.6/) | [Demo](https://s045pd.github.io/modelability/opus4.6/) | ❌ 否（`index.html` + `js/*.js` + `styles.css`） | Three.js 走 CDN importmap，静态托管无需改动 |
 
 ## 结构说明
 
