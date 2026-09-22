@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>USS Enterprise - Procedural Three.js</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: sans-serif; }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px black;
+            font-size: 14px;
+        }
+        #blocker {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        #instructions {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            text-align: center;
+            cursor: pointer;
+        }
+        kbd {
+            background-color: #333;
+            border-radius: 3px;
+            border: 1px solid #b4b4b4;
+            box-shadow: 0 1px 1px rgba(0,0,0,.2), 0 2px 0 0 rgba(255,255,255,.7) inset;
+            color: #fff;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1;
+            padding: 2px 6px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h3>企业号飞船 (纯代码生成版)</h3>
+        <p>注：纯HTML/JS无法加载外部影视级贴图和数百万面的高模，此模型利用Three.js基础几何体和程序化算法极限还原其经典结构。<br>
+        已添加内部空间（航天飞机舱、舰桥核心），由于是代码生成，可以直接穿墙进入。</p>
+    </div>
+    <div id="blocker">
+        <div id="instructions">
+            <span style="font-size:36px; margin-bottom: 20px;">点击任意位置以探索飞船</span>
+            <div style="text-align: left; line-height: 2;">
+                移动: <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd><br/>
+                上升/下降: <kbd>Space</kbd> / <kbd>Shift</kbd><br/>
+                视角: 鼠标移动<br/>
+                退出探索: <kbd>ESC</kbd>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入 Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        let camera, scene, renderer, controls;
+        const objects = [];
+
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
+        let moveUp = false;
+        let moveDown = false;
+
+        let prevTime = performance.now();
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+
+        // 材料定义
+        const hullMat = new THREE.MeshStandardMaterial({ 
+            color: 0xcccccc, 
+            roughness: 0.4, 
+            metalness: 0.3,
+            side: THREE.DoubleSide
+        });
+        const hullDetailMat = new THREE.MeshStandardMaterial({ 
+            color: 0x999999, 
+            roughness: 0.6, 
+            metalness: 0.5
+        });
+        const darkMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 });
+        const redGlow = new THREE.MeshStandardMaterial({ color: 0xff2200, emissive: 0xff0000, emissiveIntensity: 2 });
+        const blueGlow = new THREE.MeshStandardMaterial({ color: 0x0088ff, emissive: 0x0055ff, emissiveIntensity: 2 });
+        const windowMat = new THREE.MeshStandardMaterial({ color: 0xffffee, emissive: 0xffffee, emissiveIntensity: 1 }); 
+        const interiorMat = new THREE.MeshStandardMaterial({ color: 0x444444, side: THREE.BackSide, roughness: 0.8 });
+
+        init();
+        animate();
+
+        function init() {
+            camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 20000 );
+            camera.position.set(0, 30, 200);
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0x000005 );
+            scene.fog = new THREE.FogExp2( 0x000005, 0.0001 );
+
+            // 1. 星空背景生成
+            createStarfield();
+
+            // 2. 光照设置
+            const ambientLight = new THREE.AmbientLight( 0x222222 );
+            scene.add( ambientLight );
+            
+            // 主光源（模拟恒星）
+            const dirLight = new THREE.DirectionalLight( 0xffffff, 2 );
+            dirLight.position.set( 500, 300, 200 );
+            scene.add( dirLight );
+
+            // 侧边补光
+            const fillLight = new THREE.DirectionalLight( 0x88bbff, 0.5 );
+            fillLight.position.set( -500, -100, -200 );
+            scene.add( fillLight );
+
+            // 3. 控制器初始化
+            controls = new PointerLockControls( camera, document.body );
+            const blocker = document.getElementById( 'blocker' );
+            const instructions = document.getElementById( 'instructions' );
+
+            instructions.addEventListener( 'click', function () {
+                controls.lock();
+            } );
+
+            controls.addEventListener( 'lock', function () {
+                instructions.style.display = 'none';
+                blocker.style.display = 'none';
+            } );
+
+            controls.addEventListener( 'unlock', function () {
+                blocker.style.display = 'block';
+                instructions.style.display = '';
+            } );
+            scene.add( controls.getObject() );
+
+            // 4. 按键监听
+            document.addEventListener( 'keydown', onKeyDown );
+            document.addEventListener( 'keyup', onKeyUp );
+
+            // 5. 生成企业号
+            createEnterprise();
+
+            // 6. 渲染器
+            renderer = new THREE.WebGLRenderer( { antialias: true, powerPreference: "high-performance" } );
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            document.body.appendChild( renderer.domElement );
+            window.addEventListener( 'resize', onWindowResize );
+        }
+
+        function createStarfield() {
+            const starGeo = new THREE.BufferGeometry();
+            const starCount = 20000;
+            const starPos = new Float32Array(starCount * 3);
+            const starColors = new Float32Array(starCount * 3);
+            
+            for(let i=0; i<starCount*3; i+=3) {
+                // 球形分布
+                const r = 1000 + Math.random() * 9000;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                starPos[i] = r * Math.sin(phi) * Math.cos(theta);
+                starPos[i+1] = r * Math.sin(phi) * Math.sin(theta);
+                starPos[i+2] = r * Math.cos(phi);
+
+                // 星星颜色微调
+                const color = new THREE.Color();
+                color.setHSL(Math.random(), 0.5, 0.8 + Math.random()*0.2);
+                starColors[i] = color.r;
+                starColors[i+1] = color.g;
+                starColors[i+2] = color.b;
+            }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+            
+            const starMat = new THREE.PointsMaterial({
+                size: 2.0, 
+                vertexColors: true, 
+                transparent: true, 
+                opacity: 0.8
+            });
+            const stars = new THREE.Points(starGeo, starMat);
+            scene.add(stars);
+        }
+
+        function createEnterprise() {
+            const enterprise = new THREE.Group();
+
+            // ================= 1. 碟形主舰体 (Saucer Section) =================
+            const saucerGroup = new THREE.Group();
+            
+            // 碟部主盘
+            const saucerGeo1 = new THREE.CylinderGeometry( 70, 70, 3, 128 );
+            const saucer1 = new THREE.Mesh( saucerGeo1, hullMat );
+            saucerGroup.add(saucer1);
+
+            // 碟部上凸起
+            const saucerGeo2 = new THREE.CylinderGeometry( 45, 70, 6, 128 );
+            const saucer2 = new THREE.Mesh( saucerGeo2, hullMat );
+            saucer2.position.y = 4.5;
+            saucerGroup.add(saucer2);
+            
+            // 碟部下凸起
+            const saucerGeo3 = new THREE.CylinderGeometry( 65, 30, 5, 128 );
+            const saucer3 = new THREE.Mesh( saucerGeo3, hullMat );
+            saucer3.position.y = -4;
+            saucerGroup.add(saucer3);
+
+            // 舰桥 (Bridge Dome)
+            const bridgeGeo = new THREE.SphereGeometry( 8, 32, 16, 0, Math.PI*2, 0, Math.PI/2 );
+            const bridge = new THREE.Mesh( bridgeGeo, hullMat );
+            bridge.position.y = 7.5;
+            saucerGroup.add(bridge);
+            
+            // 下方传感器圆顶 (Lower Sensor Dome)
+            const sensorDomeGeo = new THREE.SphereGeometry( 5, 32, 16, 0, Math.PI*2, Math.PI/2, Math.PI/2 );
+            const sensorDome = new THREE.Mesh( sensorDomeGeo, hullMat );
+            sensorDome.position.y = -6.5;
+            saucerGroup.add(sensorDome);
+
+            // 冲压引擎 (Impulse Engines)
+            const impulseGeo = new THREE.BoxGeometry( 20, 2.5, 4 );
+            const impulse = new THREE.Mesh( impulseGeo, redGlow );
+            impulse.position.set(0, 1.5, 68);
+            saucerGroup.add(impulse);
+
+            // 生成碟部窗户
+            for(let i=0; i<120; i++) {
+                const angle = (i / 120) * Math.PI * 2;
+                // 排除冲压引擎区域
+                if (angle > -Math.PI/4 && angle < Math.PI/4 && Math.cos(angle) > 0.8) continue; 
+                
+                const winGeo = new THREE.BoxGeometry(0.8, 1.2, 0.8);
+                const window = new THREE.Mesh(winGeo, windowMat);
+                window.position.set(Math.sin(angle)*69.5, 0, Math.cos(angle)*69.5);
+                window.lookAt(saucerGroup.position);
+                saucerGroup.add(window);
+            }
+            // 内圈窗户
+            for(let i=0; i<60; i++) {
+                const angle = (i / 60) * Math.PI * 2;
+                const winGeo = new THREE.BoxGeometry(0.8, 1.2, 0.8);
+                const window = new THREE.Mesh(winGeo, windowMat);
+                window.position.set(Math.sin(angle)*42, 6, Math.cos(angle)*42);
+                window.lookAt(saucerGroup.position.clone().add(new THREE.Vector3(0,6,0)));
+                saucerGroup.add(window);
+            }
+
+            saucerGroup.position.set(0, 30, -60);
+            enterprise.add(saucerGroup);
+
+            // ================= 2. 颈部连接 (Neck) =================
+            const neckGeo = new THREE.BoxGeometry( 14, 38, 30 );
+            const neck = new THREE.Mesh( neckGeo, hullMat );
+            neck.position.set(0, 10, -40);
+            neck.rotation.x = Math.PI / 8;
+            enterprise.add(neck);
+            
+            // 颈部鱼雷发射管发光点
+            const torpedoGeo = new THREE.SphereGeometry(1.5, 16, 16);
+            const torpedo = new THREE.Mesh(torpedoGeo, redGlow);
+            torpedo.position.set(0, 18, -22);
+            enterprise.add(torpedo);
+
+
+            // ================= 3. 工程舰体 (Engineering Hull) =================
+            const engGroup = new THREE.Group();
+            
+            // 算法生成雪茄形舰体
+            const points = [];
+            for ( let i = 0; i <= 40; i ++ ) {
+                // i 0->40 代表 z 轴长度
+                let x = 0;
+                if (i < 5) x = 12 + i; // 头部张开
+                else if (i < 30) x = 17 - (i-5)*0.1; // 中段平缓缩小
+                else x = 14.5 - (i-30)*1.4; // 尾部收紧
+                const y = ( i - 20 ) * 4;
+                points.push( new THREE.Vector2( Math.max(x, 0.1), y ) );
+            }
+            const engHullGeo = new THREE.LatheGeometry( points, 64 );
+            const engHull = new THREE.Mesh( engHullGeo, hullMat );
+            engHull.rotation.x = Math.PI / 2;
+            engGroup.add(engHull);
+
+            // 偏导仪圆盘 (Deflector Dish)
+            const deflectorGeo = new THREE.CylinderGeometry( 13, 13, 3, 64 );
+            const deflector = new THREE.Mesh( deflectorGeo, blueGlow );
+            deflector.rotation.x = Math.PI / 2;
+            deflector.position.set(0, 0, -80);
+            engGroup.add(deflector);
+            
+            // 偏导仪天线核心
+            const deflectorCoreGeo = new THREE.CylinderGeometry( 2, 2, 8, 16 );
+            const deflectorCore = new THREE.Mesh( deflectorCoreGeo, hullMat );
+            deflectorCore.rotation.x = Math.PI / 2;
+            deflectorCore.position.set(0, 0, -82);
+            engGroup.add(deflectorCore);
+
+            // 航天飞机舱门 (Shuttlebay Doors)
+            const bayGeo = new THREE.BoxGeometry( 18, 12, 2 );
+            const bay = new THREE.Mesh( bayGeo, darkMat );
+            bay.position.set(0, 6, 80);
+            engGroup.add(bay);
+            
+            // 工程部两侧窗户
+            for(let i=0; i<30; i++) {
+                const z = -40 + i * 3;
+                const win1 = new THREE.Mesh(new THREE.BoxGeometry(26, 0.8, 0.8), windowMat);
+                win1.position.set(0, 2, z);
+                engGroup.add(win1);
+                
+                const win2 = new THREE.Mesh(new THREE.BoxGeometry(28, 0.8, 0.8), windowMat);
+                win2.position.set(0, -2, z);
+                engGroup.add(win2);
+            }
+
+            engGroup.position.set(0, -15, 0);
+            enterprise.add(engGroup);
+
+            // ================= 4. 引擎支架 (Pylons) =================
+            const pylonGeo = new THREE.BoxGeometry( 3, 50, 20 );
+            // 切变效果
+            const posAttr = pylonGeo.attributes.position;
+            for(let i=0; i<posAttr.count; i++) {
+                const y = posAttr.getY(i);
+                if (y > 0) {
+                    posAttr.setZ(i, posAttr.getZ(i) - 15);
+                }
+            }
+            pylonGeo.computeVertexNormals();
+
+            const pylonL = new THREE.Mesh( pylonGeo, hullDetailMat );
+            pylonL.position.set(-25, -2, 30);
+            pylonL.rotation.z = -Math.PI / 5;
+            enterprise.add(pylonL);
+
+            const pylonR = new THREE.Mesh( pylonGeo, hullDetailMat );
+            pylonR.position.set(25, -2, 30);
+            pylonR.rotation.z = Math.PI / 5;
+            enterprise.add(pylonR);
+
+
+            // ================= 5. 曲速引擎舱 (Nacelles) =================
+            const nacelleGroupL = new THREE.Group();
+            const nacelleGroupR = new THREE.Group();
+
+            // 引擎主体
+            const nacelleGeo = new THREE.CylinderGeometry( 9, 8, 140, 64 );
+            const nacelleCylL = new THREE.Mesh( nacelleGeo, hullMat );
+            nacelleCylL.rotation.x = Math.PI / 2;
+            nacelleGroupL.add(nacelleCylL);
+            
+            const nacelleCylR = new THREE.Mesh( nacelleGeo, hullMat );
+            nacelleCylR.rotation.x = Math.PI / 2;
+            nacelleGroupR.add(nacelleCylR);
+
+            // 冲压收集器 (Bussard Collectors) 红色发光穹顶
+            const bussardGeo = new THREE.SphereGeometry( 9, 32, 16, 0, Math.PI*2, 0, Math.PI/2 );
+            const bussardL = new THREE.Mesh( bussardGeo, redGlow );
+            bussardL.rotation.x = -Math.PI / 2;
+            bussardL.position.set(0, 0, -70);
+            nacelleGroupL.add(bussardL);
+            
+            const bussardR = new THREE.Mesh( bussardGeo, redGlow );
+            bussardR.rotation.x = -Math.PI / 2;
+            bussardR.position.set(0, 0, -70);
+            nacelleGroupR.add(bussardR);
+
+            // 蓝色曲速线圈发光条 (Warp Grilles)
+            const grilleGeo = new THREE.BoxGeometry( 12, 4, 90 );
+            const grilleL = new THREE.Mesh( grilleGeo, blueGlow );
+            grilleL.position.set(4, 0, 10);
+            nacelleGroupL.add(grilleL);
+            
+            const grilleR = new THREE.Mesh( grilleGeo, blueGlow );
+            grilleR.position.set(-4, 0, 10);
+            nacelleGroupR.add(grilleR);
+
+            // 引擎尾部装饰
+            const tailGeo = new THREE.SphereGeometry( 6, 32, 16, 0, Math.PI*2, 0, Math.PI/2 );
+            const tailL = new THREE.Mesh(tailGeo, hullDetailMat);
+            tailL.rotation.x = Math.PI / 2;
+            tailL.position.set(0,0,70);
+            nacelleGroupL.add(tailL);
+            
+            const tailR = new THREE.Mesh(tailGeo, hullDetailMat);
+            tailR.rotation.x = Math.PI / 2;
+            tailR.position.set(0,0,70);
+            nacelleGroupR.add(tailR);
+
+            nacelleGroupL.position.set(-42, 20, 20);
+            nacelleGroupR.position.set(42, 20, 20);
+            enterprise.add(nacelleGroupL);
+            enterprise.add(nacelleGroupR);
+
+
+            // ================= 6. 可进入的内部空间 (Interiors) =================
+            // 舰桥内部 (位于碟部顶端下方)
+            const bridgeIntGeo = new THREE.CylinderGeometry(6, 6, 4, 32);
+            const bridgeInt = new THREE.Mesh(bridgeIntGeo, interiorMat);
+            bridgeInt.position.set(0, 36, -60);
+            scene.add(bridgeInt);
+            
+            // 舰桥中央控制台 (发光核心)
+            const consoleGeo = new THREE.CylinderGeometry(1, 1, 1, 16);
+            const consoleMesh = new THREE.Mesh(consoleGeo, new THREE.MeshStandardMaterial({color: 0x00ff00, emissive: 0x005500}));
+            consoleMesh.position.set(0, 35, -60);
+            scene.add(consoleMesh);
+
+            // 航天飞机舱内部 (位于工程舰体尾部)
+            const bayIntGeo = new THREE.BoxGeometry( 16, 10, 40 );
+            const bayInt = new THREE.Mesh(bayIntGeo, interiorMat);
+            bayInt.position.set(0, -9, 60);
+            scene.add(bayInt);
+            
+            // 航天飞机舱内灯光条
+            const bayLightGeo = new THREE.BoxGeometry( 1, 0.5, 38 );
+            const bayLight1 = new THREE.Mesh(bayLightGeo, windowMat);
+            bayLight1.position.set(-7, -13, 60);
+            scene.add(bayLight1);
+            const bayLight2 = new THREE.Mesh(bayLightGeo, windowMat);
+            bayLight2.position.set(7, -13, 60);
+            scene.add(bayLight2);
+
+            scene.add(enterprise);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+
+        function onKeyDown ( event ) {
+            switch ( event.code ) {
+                case 'ArrowUp':
+                case 'KeyW': moveForward = true; break;
+                case 'ArrowLeft':
+                case 'KeyA': moveLeft = true; break;
+                case 'ArrowDown':
+                case 'KeyS': moveBackward = true; break;
+                case 'ArrowRight':
+                case 'KeyD': moveRight = true; break;
+                case 'Space': moveUp = true; break;
+                case 'ShiftLeft':
+                case 'ShiftRight': moveDown = true; break;
+            }
+        }
+
+        function onKeyUp ( event ) {
+            switch ( event.code ) {
+                case 'ArrowUp':
+                case 'KeyW': moveForward = false; break;
+                case 'ArrowLeft':
+                case 'KeyA': moveLeft = false; break;
+                case 'ArrowDown':
+                case 'KeyS': moveBackward = false; break;
+                case 'ArrowRight':
+                case 'KeyD': moveRight = false; break;
+                case 'Space': moveUp = false; break;
+                case 'ShiftLeft':
+                case 'ShiftRight': moveDown = false; break;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame( animate );
+
+            const time = performance.now();
+            
+            if ( controls.isLocked === true ) {
+                const delta = ( time - prevTime ) / 1000;
+
+                // 摩擦力阻尼
+                velocity.x -= velocity.x * 3.0 * delta;
+                velocity.y -= velocity.y * 3.0 * delta;
+                velocity.z -= velocity.z * 3.0 * delta;
+
+                direction.z = Number( moveForward ) - Number( moveBackward );
+                direction.x = Number( moveRight ) - Number( moveLeft );
+                direction.y = Number( moveUp ) - Number( moveDown );
+                direction.normalize(); // 保证对角线移动速度一致
+
+                const speed = 400.0; // 移动速度
+                
+                if ( moveForward || moveBackward ) velocity.z -= direction.z * speed * delta;
+                if ( moveLeft || moveRight ) velocity.x -= direction.x * speed * delta;
+                if ( moveUp || moveDown ) velocity.y -= direction.y * speed * delta;
+
+                controls.moveRight( - velocity.x * delta );
+                controls.moveForward( - velocity.z * delta );
+                controls.getObject().position.y -= velocity.y * delta;
+            }
+            
+            prevTime = time;
+            renderer.render( scene, camera );
+        }
+    </script>
+</body>
+</html>

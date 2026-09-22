@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>U.S.S. ENTERPRISE NCC-1701-D | 进取号3D可进入旗舰模型</title>
+  <!-- Google Fonts: LCARS & Sci-Fi Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --lcars-orange: #ff9900;
+      --lcars-peach: #ff9966;
+      --lcars-purple: #cc99cc;
+      --lcars-blue: #9999ff;
+      --lcars-cyan: #33ccff;
+      --lcars-red: #cc0000;
+      --lcars-yellow: #ffcc00;
+      --lcars-dark: #111116;
+      --lcars-panel: rgba(18, 20, 28, 0.85);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #020205;
+      font-family: 'Antonio', 'Share Tech Mono', sans-serif;
+      color: #e0e6ed;
+    }
+
+    #webgl-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Crosshair for interior first person mode */
+    #crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 50;
+      display: none;
+    }
+    #crosshair::before, #crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 204, 0, 0.7);
+    }
+    #crosshair::before {
+      top: 4px; left: 0; width: 10px; height: 2px;
+    }
+    #crosshair::after {
+      top: 0; left: 4px; width: 2px; height: 10px;
+    }
+
+    /* Red Alert Fullscreen Flashing Overlay */
+    #red-alert-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 40;
+      background: radial-gradient(circle, rgba(255, 0, 0, 0) 30%, rgba(220, 0, 0, 0.45) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .red-alert-active #red-alert-overlay {
+      animation: alertPulse 1.1s infinite alternate ease-in-out;
+    }
+    @keyframes alertPulse {
+      0% { opacity: 0.15; }
+      100% { opacity: 0.75; }
+    }
+
+    /* LCARS Master UI Overlay */
+    #lcars-ui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 24px;
+    }
+
+    .interactive-element {
+      pointer-events: auto;
+    }
+
+    /* Header Bar */
+    .lcars-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .lcars-pill {
+      background: var(--lcars-orange);
+      color: #000;
+      font-family: 'Antonio', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 6px 20px;
+      border-radius: 20px 0 0 20px;
+      font-size: 1.15rem;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lcars-pill-purple {
+      background: var(--lcars-purple);
+      border-radius: 0;
+      padding: 6px 14px;
+    }
+    .lcars-pill-blue {
+      background: var(--lcars-blue);
+      border-radius: 0 20px 20px 0;
+      padding: 6px 24px;
+      font-size: 1.15rem;
+    }
+    .lcars-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(153, 153, 255, 0.7);
+    }
+    .ship-class {
+      color: var(--lcars-peach);
+      font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-left: 10px;
+    }
+
+    /* Controls Panels */
+    .lcars-main-layout {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .lcars-panel-left {
+      background: var(--lcars-panel);
+      border-left: 12px solid var(--lcars-orange);
+      border-top: 4px solid var(--lcars-purple);
+      border-radius: 0 16px 16px 0;
+      padding: 16px 20px;
+      width: 320px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
+
+    .lcars-section-title {
+      font-size: 0.85rem;
+      font-family: 'Orbitron', sans-serif;
+      color: var(--lcars-peach);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 153, 0, 0.3);
+      padding-bottom: 4px;
+    }
+
+    .deck-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .lcars-btn {
+      background: rgba(30, 35, 50, 0.8);
+      border: 1px solid var(--lcars-blue);
+      color: #fff;
+      font-family: 'Antonio', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      padding: 8px 14px;
+      cursor: pointer;
+      text-align: left;
+      border-radius: 4px 12px 12px 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .lcars-btn:hover {
+      background: var(--lcars-blue);
+      color: #000;
+      transform: translateX(4px);
+      box-shadow: 0 0 14px rgba(153, 153, 255, 0.6);
+    }
+    .lcars-btn.active {
+      background: var(--lcars-orange);
+      color: #000;
+      font-weight: 700;
+      border-color: var(--lcars-orange);
+      box-shadow: 0 0 18px rgba(255, 153, 0, 0.7);
+    }
+    .lcars-btn-alert {
+      background: rgba(80, 10, 10, 0.7);
+      border-color: var(--lcars-red);
+      color: #ff9999;
+    }
+    .lcars-btn-alert:hover {
+      background: var(--lcars-red);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(255, 0, 0, 0.8);
+    }
+    .lcars-btn-alert.active {
+      background: #ff1100;
+      color: #fff;
+      font-weight: 700;
+      border-color: #ff5533;
+      box-shadow: 0 0 24px rgba(255, 0, 0, 0.95);
+      animation: alertBtnPulse 1s infinite alternate;
+    }
+    @keyframes alertBtnPulse {
+      0% { box-shadow: 0 0 10px #ff0000; }
+      100% { box-shadow: 0 0 25px #ff5533; }
+    }
+
+    .lcars-btn-warp {
+      background: rgba(10, 30, 70, 0.8);
+      border-color: var(--lcars-cyan);
+      color: #99ebff;
+    }
+    .lcars-btn-warp:hover {
+      background: var(--lcars-cyan);
+      color: #000;
+      box-shadow: 0 0 16px rgba(51, 204, 255, 0.8);
+    }
+    .lcars-btn-warp.active {
+      background: #00d4ff;
+      color: #000;
+      font-weight: 700;
+      box-shadow: 0 0 25px rgba(0, 212, 255, 0.9);
+    }
+
+    /* Right telemetry panel */
+    .lcars-panel-right {
+      background: var(--lcars-panel);
+      border-right: 12px solid var(--lcars-purple);
+      border-top: 4px solid var(--lcars-peach);
+      border-radius: 16px 0 0 16px;
+      padding: 16px 20px;
+      width: 330px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .telemetry-label {
+      color: var(--lcars-peach);
+    }
+    .telemetry-val {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--lcars-blue), var(--lcars-cyan));
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    /* Instructions Modal / Tooltip */
+    #instructions-tip {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 12, 20, 0.85);
+      border: 1px solid var(--lcars-orange);
+      padding: 8px 24px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      color: #ffcc00;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      font-family: 'Share Tech Mono', monospace;
+      text-align: center;
+    }
+
+    /* Sound notification */
+    #audio-toggle {
+      cursor: pointer;
+      padding: 6px 14px;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      background: rgba(30, 40, 60, 0.7);
+      border: 1px solid var(--lcars-blue);
+      color: var(--lcars-blue);
+      transition: all 0.2s;
+    }
+    #audio-toggle.enabled {
+      background: var(--lcars-orange);
+      color: #000;
+      border-color: var(--lcars-orange);
+      font-weight: bold;
+    }
+
+    /* Cinematic letterbox bars */
+    .cinematic-bar {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 0px;
+      background: #000;
+      z-index: 35;
+      transition: height 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .cinematic-top { top: 0; }
+    .cinematic-bottom { bottom: 0; }
+    .cinematic-mode .cinematic-top,
+    .cinematic-mode .cinematic-bottom {
+      height: 60px;
+    }
+
+    /* Loading Screen */
+    #loading-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #06070c;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      transition: opacity 0.8s ease, visibility 0.8s;
+    }
+    .loading-spinner {
+      width: 80px;
+      height: 80px;
+      border: 4px solid rgba(255, 153, 0, 0.15);
+      border-top: 4px solid var(--lcars-orange);
+      border-right: 4px solid var(--lcars-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 24px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 3px;
+      color: var(--lcars-orange);
+      margin-bottom: 8px;
+    }
+    .loading-subtext {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.9rem;
+      color: #8899aa;
+    }
+  </style>
+
+  <!-- Three.js + Addons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+  <!-- Postprocessing for Glowing Warp Core & Bussards -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+</head>
+<body>
+
+  <!-- 3D Canvas Container -->
+  <div id="webgl-container"></div>
+  <div id="crosshair"></div>
+  <div id="red-alert-overlay"></div>
+  <div class="cinematic-bar cinematic-top"></div>
+  <div class="cinematic-bar cinematic-bottom"></div>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">STARFLEET COMPUTER ACCESS</div>
+    <div class="loading-subtext" id="loading-status">INITIALIZING GALAXY-CLASS STARSHIP SCHEMATICS...</div>
+  </div>
+
+  <!-- LCARS Interface Overlay -->
+  <div id="lcars-ui">
+    <!-- Header -->
+    <div class="lcars-header">
+      <div class="lcars-pill">LCARS 40279</div>
+      <div class="lcars-pill lcars-pill-purple">FLEET FLAGSHIP</div>
+      <div class="lcars-pill lcars-pill-blue">
+        <span class="lcars-title">U.S.S. ENTERPRISE</span>
+        <span class="ship-class">NCC-1701-D · GALAXY CLASS</span>
+      </div>
+      <button id="audio-toggle" class="interactive-element" title="开启/关闭星舰声效系统">🔊 音效系统: 就绪 (点击启动)</button>
+    </div>
+
+    <!-- Main Navigation & Telemetry -->
+    <div class="lcars-main-layout">
+      <!-- Left Panel: Decks & Modes -->
+      <div class="lcars-panel-left interactive-element">
+        <div class="lcars-section-title">
+          <span>甲板区域 / 登舰漫游</span>
+          <span style="color:var(--lcars-orange);">DECK SELECT</span>
+        </div>
+        <div class="deck-buttons">
+          <button class="lcars-btn active" id="btn-exterior" onclick="switchLocation('exterior')">
+            <span>🚀 外部星轨全景 (Orbit View)</span>
+            <span style="font-size:0.8rem;color:var(--lcars-peach);">DECK EXT</span>
+          </button>
+          <button class="lcars-btn" id="btn-bridge" onclick="switchLocation('bridge')">
+            <span>🛸 甲板 1: 主舰桥 (Main Bridge)</span>
+            <span style="font-size:0.8rem;color:var(--lcars-peach);">DECK 01</span>
+          </button>
+          <button class="lcars-btn" id="btn-engineering" onclick="switchLocation('engineering')">
+            <span>⚡ 甲板 36: 主工程室 (Warp Core)</span>
+            <span style="font-size:0.8rem;color:var(--lcars-peach);">DECK 36</span>
+          </button>
+          <button class="lcars-btn" id="btn-corridor" onclick="switchLocation('corridor')">
+            <span>🚪 舰内走廊与涡轮电梯 (Corridor)</span>
+            <span style="font-size:0.8rem;color:var(--lcars-peach);">TRANSIT</span>
+          </button>
+        </div>
+
+        <div class="lcars-section-title" style="margin-top: 14px;">
+          <span>战术指令 / 航行控制</span>
+          <span style="color:var(--lcars-cyan);">TACTICAL</span>
+        </div>
+        <div class="deck-buttons">
+          <button class="lcars-btn lcars-btn-alert" id="btn-red-alert" onclick="toggleRedAlert()">
+            <span id="alert-text">🚨 红色警报 (RED ALERT)</span>
+            <span>STATUS: NORMAL</span>
+          </button>
+          <button class="lcars-btn lcars-btn-warp" id="btn-warp" onclick="toggleWarpDrive()">
+            <span id="warp-text">✨ 曲速跃迁 (ENGAGE WARP 9)</span>
+            <span>SUB-LIGHT</span>
+          </button>
+          <button class="lcars-btn" id="btn-shields" onclick="toggleShields()">
+            <span id="shield-text">🛡️ 偏导护盾 (SHIELDS UP)</span>
+            <span id="shield-status">OFFLINE</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Panel: Ship Status Telemetry -->
+      <div class="lcars-panel-right interactive-element">
+        <div class="lcars-section-title">
+          <span>星舰实时遥测指标</span>
+          <span style="color:var(--lcars-purple);">TELEMETRY</span>
+        </div>
+        
+        <div class="telemetry-row">
+          <span class="telemetry-label">曲速核心输出 (WARP OUTPUT):</span>
+          <span class="telemetry-val" id="val-warp-power">1.21 TW (NORMAL)</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="bar-warp" style="width: 82%;"></div>
+        </div>
+
+        <div class="telemetry-row">
+          <span class="telemetry-label">主偏导仪频率 (DEFLECTOR):</span>
+          <span class="telemetry-val" id="val-deflector">552.4 THz (OPTIMAL)</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="bar-deflector" style="width: 95%; background: linear-gradient(90deg, #33ccff, #0088ff);"></div>
+        </div>
+
+        <div class="telemetry-row">
+          <span class="telemetry-label">护盾发生器 (SHIELDS):</span>
+          <span class="telemetry-val" id="val-shields">100% ONLINE</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="bar-shields" style="width: 100%; background: linear-gradient(90deg, #00ff88, #33ccff);"></div>
+        </div>
+
+        <div class="telemetry-row">
+          <span class="telemetry-label">结构完整性场 (SIF):</span>
+          <span class="telemetry-val">99.8% NOMINAL</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">环境维持系统 (LIFE SUPPORT):</span>
+          <span class="telemetry-val" style="color: #66ff66;">DECK 1-42 ACTIVE</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">当前位置 (COORDINATES):</span>
+          <span class="telemetry-val" id="val-location">SECTOR 001 · EARTH ORBIT</span>
+        </div>
+
+        <div style="margin-top: 10px; border-top: 1px solid rgba(204, 153, 204, 0.3); padding-top: 8px; display: flex; gap: 6px;">
+          <button class="lcars-btn" style="flex:1; font-size: 0.85rem; padding: 4px;" onclick="cycleCameraAngle()">🎥 视角环绕</button>
+          <button class="lcars-btn" style="flex:1; font-size: 0.85rem; padding: 4px;" onclick="toggleCinematicMode()">🎬 影院画幅</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Instructions Tip -->
+    <div id="instructions-tip">
+      <span id="tip-content">💡 外部模式：按住鼠标左键旋转视角，滚轮缩放，右键平移。点击左侧面板可随时登舰进入主舰桥或主工程室漫游！</span>
+    </div>
+  </div>
+
+  <!-- Main Starship Logic and ThreeJS Rendering Script -->
+  <script>
+    /* =========================================================================
+       1. GLOBAL STATE & CONFIGURATION
+       ========================================================================= */
+    const STATE = {
+      location: 'exterior', // 'exterior', 'bridge', 'engineering', 'corridor'
+      redAlert: false,
+      warpActive: false,
+      warpSpeed: 0,
+      shieldsActive: false,
+      audioEnabled: false,
+      cinematic: false,
+      time: 0,
+      orbitIndex: 0,
+      // First Person Controls state
+      moveForward: false,
+      moveBackward: false,
+      moveLeft: false,
+      moveRight: false,
+      canJump: false,
+      velocity: new THREE.Vector3(),
+      direction: new THREE.Vector3()
+    };
+
+    const container = document.getElementById('webgl-container');
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingStatus = document.getElementById('loading-status');
+    const crosshair = document.getElementById('crosshair');
+    const tipContent = document.getElementById('tip-content');
+    const audioToggleBtn = document.getElementById('audio-toggle');
+
+    /* =========================================================================
+       2. THREE.JS INITIALIZATION
+       ========================================================================= */
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x020208, 0.0003);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 40000);
+    camera.position.set(0, 180, 520);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    // Controls
+    const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+    orbitControls.enableDamping = true;
+    orbitControls.dampingFactor = 0.05;
+    orbitControls.maxDistance = 2500;
+    orbitControls.minDistance = 15;
+    orbitControls.target.set(0, 10, 0);
+
+    // PointerLock for First Person interior
+    const pointerControls = new THREE.PointerLockControls(camera, document.body);
+    pointerControls.addEventListener('lock', () => {
+      crosshair.style.display = 'block';
+    });
+    pointerControls.addEventListener('unlock', () => {
+      if (STATE.location !== 'exterior') {
+        crosshair.style.display = 'none';
+      }
+    });
+
+    // Post-Processing: Unreal Bloom with graceful fallback
+    let composer = null;
+    try {
+      if (typeof THREE.EffectComposer === 'function' && typeof THREE.UnrealBloomPass === 'function') {
+        const renderScene = new THREE.RenderPass(scene, camera);
+        const bloomPass = new THREE.UnrealBloomPass(
+          new THREE.Vector2(window.innerWidth, window.innerHeight),
+          1.15, // strength
+          0.4,  // radius
+          0.75  // threshold
+        );
+        composer = new THREE.EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+      }
+    } catch (e) {
+      console.warn('Bloom composer initialization bypassed:', e);
+      composer = null;
+    }
+
+    // Interactive Raycaster for clicking ship to enter decks directly
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    /* =========================================================================
+       3. WEB AUDIO SYNTHESIZER (Pure Web Audio API - Zero External Files)
+       ========================================================================= */
+    class StarfleetAudioSystem {
+      constructor() {
+        this.ctx = null;
+        this.initialized = false;
+        this.engineOsc = null;
+        this.engineGain = null;
+        this.warpCoreOsc = null;
+        this.warpCoreGain = null;
+        this.alertOsc = null;
+        this.alertTimer = null;
+      }
+
+      init() {
+        if (this.initialized) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioContext();
+
+        // 1. Deep Engine Ambient Drone (50Hz sub-bass with dual detuned filters)
+        this.engineOsc = this.ctx.createOscillator();
+        this.engineOsc.type = 'sawtooth';
+        this.engineOsc.frequency.setValueAtTime(54, this.ctx.currentTime);
+
+        const engineFilter = this.ctx.createBiquadFilter();
+        engineFilter.type = 'lowpass';
+        engineFilter.frequency.setValueAtTime(140, this.ctx.currentTime);
+        engineFilter.Q.setValueAtTime(4.0, this.ctx.currentTime);
+
+        this.engineGain = this.ctx.createGain();
+        this.engineGain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+
+        this.engineOsc.connect(engineFilter);
+        engineFilter.connect(this.engineGain);
+        this.engineGain.connect(this.ctx.destination);
+        this.engineOsc.start();
+
+        // 2. Warp Core Chug LFO
+        this.warpCoreOsc = this.ctx.createOscillator();
+        this.warpCoreOsc.type = 'sine';
+        this.warpCoreOsc.frequency.setValueAtTime(1.15, this.ctx.currentTime); // 1.15 Hz pulse
+
+        this.warpCoreGain = this.ctx.createGain();
+        this.warpCoreGain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+
+        const warpTone = this.ctx.createOscillator();
+        warpTone.type = 'triangle';
+        warpTone.frequency.setValueAtTime(96, this.ctx.currentTime);
+
+        this.warpCoreOsc.connect(warpTone.frequency);
+        warpTone.connect(this.warpCoreGain);
+        this.warpCoreGain.connect(this.ctx.destination);
+        warpTone.start();
+        this.warpCoreOsc.start();
+
+        this.initialized = true;
+      }
+
+      playChirp(type = 'normal') {
+        if (!this.initialized || !STATE.audioEnabled) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        const now = this.ctx.currentTime;
+        if (type === 'high') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(1200, now);
+          osc.frequency.exponentialRampToValueAtTime(1760, now + 0.08);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+          osc.start(now);
+          osc.stop(now + 0.13);
+        } else if (type === 'door') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.setValueAtTime(659, now + 0.1);
+          gain.gain.setValueAtTime(0.07, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.36);
+        } else {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(1046, now + 0.06);
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.start(now);
+          osc.stop(now + 0.11);
+        }
+      }
+
+      startRedAlert() {
+        if (!this.initialized || !STATE.audioEnabled) return;
+        this.stopRedAlert();
+        let highTone = true;
+        const alertStep = () => {
+          if (!STATE.redAlert) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          const now = this.ctx.currentTime;
+          osc.type = 'sawtooth';
+          const freq = highTone ? 620 : 490;
+          osc.frequency.setValueAtTime(freq, now);
+          osc.frequency.exponentialRampToValueAtTime(freq - 70, now + 0.45);
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1200, now);
+          osc.disconnect();
+          osc.connect(filter);
+          filter.connect(gain);
+
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+          osc.start(now);
+          osc.stop(now + 0.52);
+
+          highTone = !highTone;
+          this.alertTimer = setTimeout(alertStep, 700);
+        };
+        alertStep();
+      }
+
+      stopRedAlert() {
+        if (this.alertTimer) {
+          clearTimeout(this.alertTimer);
+          this.alertTimer = null;
+        }
+      }
+
+      playWarpSound() {
+        if (!this.initialized || !STATE.audioEnabled) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(60, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 1.2);
+        osc.frequency.exponentialRampToValueAtTime(1600, now + 1.6);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 2.5);
+
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.linearRampToValueAtTime(0.25, now + 1.4);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 2.6);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 2.6);
+      }
+    }
+    const starfleetAudio = new StarfleetAudioSystem();
+
+    function enableAudio() {
+      starfleetAudio.init();
+      STATE.audioEnabled = !STATE.audioEnabled;
+      if (STATE.audioEnabled) {
+        audioToggleBtn.classList.add('enabled');
+        audioToggleBtn.innerHTML = '🔊 音效系统: 已激活 (点击静音)';
+        starfleetAudio.playChirp('high');
+        if (STATE.redAlert) starfleetAudio.startRedAlert();
+      } else {
+        audioToggleBtn.classList.remove('enabled');
+        audioToggleBtn.innerHTML = '🔇 音效系统: 已静音 (点击启动)';
+        starfleetAudio.stopRedAlert();
+      }
+    }
+    audioToggleBtn.addEventListener('click', enableAudio);
+
+    /* =========================================================================
+       4. PROCEDURAL TEXTURES GENERATOR (Authentic Aztec, Hull Markings & LCARS)
+       ========================================================================= */
+    const Textures = {};
+
+    function generateHullTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 2048;
+      canvas.height = 2048;
+      const ctx = canvas.getContext('2d');
+
+      // 1. Base Pearlescent Starfleet Off-White / Light Gray Hull
+      ctx.fillStyle = '#dbe0e8';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 2. Multi-tone Aztec Plating Pattern
+      const cols = 32;
+      const rows = 32;
+      const cellW = canvas.width / cols;
+      const cellH = canvas.height / rows;
+
+      const aztecShades = ['#d2d8e2', '#e2e7ef', '#ccd3de', '#eef2f7', '#c4cbd7'];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          ctx.fillStyle = aztecShades[(r * 7 + c * 13) % aztecShades.length];
+          ctx.fillRect(c * cellW + 1, r * cellH + 1, cellW - 2, cellH - 2);
+
+          // Sub-panels
+          if ((r + c) % 3 === 0) {
+            ctx.fillStyle = aztecShades[(r + c) % aztecShades.length];
+            ctx.fillRect(c * cellW + cellW * 0.25, r * cellH + cellH * 0.25, cellW * 0.5, cellH * 0.5);
+          }
+        }
+      }
+
+      // 3. Starfleet Red Racing Stripes & Pennant Borders
+      ctx.fillStyle = '#b81414';
+      ctx.fillRect(200, 100, canvas.width - 400, 16);
+      ctx.fillRect(200, 130, canvas.width - 400, 6);
+
+      // 4. Bold Starship Name & Registry: "U.S.S. ENTERPRISE", "NCC-1701-D"
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 84px Arial, Helvetica, sans-serif';
+      ctx.fillStyle = '#111116';
+      ctx.fillText('U.S.S. ENTERPRISE', canvas.width / 2, 420);
+
+      ctx.font = 'bold 150px Arial, Helvetica, sans-serif';
+      ctx.fillText('NCC-1701-D', canvas.width / 2, 580);
+
+      // Starfleet Chevron Pennant (Arrowhead Insignia)
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 240);
+      ctx.lineTo(canvas.width / 2 + 55, 340);
+      ctx.lineTo(canvas.width / 2, 310);
+      ctx.lineTo(canvas.width / 2 - 55, 340);
+      ctx.closePath();
+      ctx.fillStyle = '#cc8800';
+      ctx.fill();
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 5;
+      ctx.stroke();
+
+      // Starfleet Yellow Emergency Escape Pod Hatch Array (Hundreds of pods)
+      ctx.fillStyle = '#e5a50a';
+      ctx.strokeStyle = '#553300';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 28; i++) {
+        for (let j = 0; j < 6; j++) {
+          const px = 280 + i * 54;
+          const py = 760 + j * 42;
+          ctx.fillRect(px, py, 26, 20);
+          ctx.strokeRect(px, py, 26, 20);
+        }
+      }
+
+      // Phaser array strip (dorsal curved strip)
+      ctx.fillStyle = '#d48810';
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, 850, -Math.PI * 0.7, -Math.PI * 0.3);
+      ctx.lineWidth = 24;
+      ctx.strokeStyle = '#3a200a';
+      ctx.stroke();
+      ctx.strokeStyle = '#ff9900';
+      ctx.lineWidth = 14;
+      ctx.stroke();
+
+      // Hull Seam Grid Lines
+      ctx.strokeStyle = 'rgba(60, 70, 90, 0.4)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < canvas.width; i += cellW) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+      }
+      for (let j = 0; j < canvas.height; j += cellH) {
+        ctx.beginPath();
+        ctx.moveTo(0, j); ctx.lineTo(canvas.width, j);
+        ctx.stroke();
+      }
+
+      // Windows (Glowing warm yellow/white rectangles)
+      ctx.fillStyle = '#ffffcc';
+      for (let w = 0; w < 120; w++) {
+        const wx = 150 + Math.random() * (canvas.width - 300);
+        const wy = 1200 + Math.random() * 700;
+        ctx.fillRect(wx, wy, 8, 14);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      return texture;
+    }
+
+    function generateLCARSTexture(type = 'bridge') {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#05070d';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Authentic Okuda LCARS colors
+      const orange = '#ff9900';
+      const peach = '#ff9966';
+      const purple = '#cc99cc';
+      const blue = '#9999ff';
+      const cyan = '#33ccff';
+      const yellow = '#ffcc00';
+
+      // Left curved elbow bracket
+      ctx.fillStyle = orange;
+      ctx.beginPath();
+      ctx.moveTo(40, 20);
+      ctx.lineTo(260, 20);
+      ctx.lineTo(260, 80);
+      ctx.lineTo(120, 80);
+      ctx.arcTo(40, 80, 40, 180, 60);
+      ctx.lineTo(40, canvas.height - 20);
+      ctx.lineTo(10, canvas.height - 20);
+      ctx.lineTo(10, 50);
+      ctx.arcTo(10, 20, 40, 20, 40);
+      ctx.closePath();
+      ctx.fill();
+
+      // Top pills
+      ctx.fillStyle = purple;
+      ctx.fillRect(280, 20, 160, 60);
+      ctx.fillStyle = blue;
+      ctx.fillRect(460, 20, 200, 60);
+      ctx.fillStyle = peach;
+      ctx.fillRect(680, 20, 240, 60);
+
+      // Left column buttons
+      const btnColors = [purple, blue, peach, orange, yellow];
+      for (let i = 0; i < 5; i++) {
+        ctx.fillStyle = btnColors[i % btnColors.length];
+        ctx.beginPath();
+        ctx.arc(80, 140 + i * 65, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(110, 120 + i * 65, 140, 40);
+
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 20px Antonio, sans-serif';
+        ctx.fillText('SYS ' + (100 + i * 42), 125, 146 + i * 65);
+      }
+
+      // Central Diagnostic Graph
+      ctx.strokeStyle = cyan;
+      ctx.lineWidth = 4;
+      ctx.strokeRect(300, 110, 680, 360);
+
+      // Dynamic Sine Wave / Graph
+      ctx.beginPath();
+      ctx.strokeStyle = orange;
+      ctx.lineWidth = 3;
+      for (let x = 320; x < 960; x += 10) {
+        const y = 290 + Math.sin((x + (type === 'engineering' ? 50 : 0)) * 0.05) * 45;
+        if (x === 320) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Ship cross section diagram schematic
+      ctx.strokeStyle = blue;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      // Elliptical Saucer
+      ctx.ellipse(640, 200, 140, 45, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      // Engineering Hull
+      ctx.strokeRect(600, 250, 80, 110);
+      // Nacelles
+      ctx.strokeRect(500, 230, 30, 130);
+      ctx.strokeRect(750, 230, 30, 130);
+
+      // Status text
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 28px Orbitron, Antonio, sans-serif';
+      ctx.fillText(type === 'engineering' ? 'WARP CORE INTERMIX MATRIX' : 'TACTICAL & SENSOR TELEMETRY', 320, 150);
+
+      ctx.fillStyle = yellow;
+      ctx.font = '22px "Share Tech Mono", monospace';
+      ctx.fillText('DIAGNOSTIC STATUS: NOMINAL', 320, 430);
+      ctx.fillText('POWER FLOW: 99.4%', 700, 430);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      return texture;
+    }
+
+    // Generate Deflector Center Glow Texture
+    function generateDeflectorGlowTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createRadialGradient(256, 256, 10, 256, 256, 256);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.25, '#55ddff');
+      grad.addColorStop(0.65, '#0066cc');
+      grad.addColorStop(0.9, '#002255');
+      grad.addColorStop(1, '#000818');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Concentric rings
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 4;
+      for (let r = 40; r < 250; r += 35) {
+        ctx.beginPath();
+        ctx.arc(256, 256, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    loadingStatus.innerText = 'GENERATING AZTEC HULL PROCEDURAL TEXTURES...';
+    Textures.hull = generateHullTexture();
+    Textures.lcarsBridge = generateLCARSTexture('bridge');
+    Textures.lcarsEngineering = generateLCARSTexture('engineering');
+    Textures.deflector = generateDeflectorGlowTexture();
+
+    /* =========================================================================
+       5. MATERIALS DEFINITIONS
+       ========================================================================= */
+    const Materials = {
+      // Main Starfleet Pearl Hull (PBR Metallic/Roughness)
+      hull: new THREE.MeshStandardMaterial({
+        map: Textures.hull,
+        roughness: 0.38,
+        metalness: 0.22,
+        bumpMap: Textures.hull,
+        bumpScale: 0.04
+      }),
+      // Dark Charcoal Armor Plating
+      hullDark: new THREE.MeshStandardMaterial({
+        color: 0x222630,
+        roughness: 0.5,
+        metalness: 0.3
+      }),
+      // Bridge Teak Wood Arch
+      bridgeWood: new THREE.MeshStandardMaterial({
+        color: 0x8a4b24,
+        roughness: 0.25,
+        metalness: 0.1
+      }),
+      // Bridge Carpet Floor
+      bridgeCarpet: new THREE.MeshStandardMaterial({
+        color: 0x5a2328,
+        roughness: 0.85,
+        metalness: 0.05
+      }),
+      // Bridge Walls
+      bridgeWall: new THREE.MeshStandardMaterial({
+        color: 0xd8cca8,
+        roughness: 0.7,
+        metalness: 0.1
+      }),
+      // Nacelle Bussard Ramscoop Glowing Red
+      bussard: new THREE.MeshStandardMaterial({
+        color: 0xff2200,
+        emissive: 0xff3300,
+        emissiveIntensity: 2.2,
+        roughness: 0.2,
+        transparent: true,
+        opacity: 0.95
+      }),
+      // Nacelle Warp Field Grille Glowing Cyan/Blue
+      warpGrille: new THREE.MeshStandardMaterial({
+        color: 0x0099ff,
+        emissive: 0x00aaff,
+        emissiveIntensity: 2.8,
+        roughness: 0.15
+      }),
+      // Impulse Engine Exhaust Crimson Glowing
+      impulseGlow: new THREE.MeshStandardMaterial({
+        color: 0xff0000,
+        emissive: 0xff2200,
+        emissiveIntensity: 3.5,
+        roughness: 0.2
+      }),
+      // Main Deflector Dish Copper / Bronze Outer Housing
+      deflectorHousing: new THREE.MeshStandardMaterial({
+        color: 0xbd7d3e,
+        roughness: 0.3,
+        metalness: 0.85
+      }),
+      // Main Deflector Glowing Core
+      deflectorCore: new THREE.MeshStandardMaterial({
+        map: Textures.deflector,
+        emissive: 0x0099ee,
+        emissiveIntensity: 2.6,
+        roughness: 0.2
+      }),
+      // Windows / Light strips
+      windowLight: new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0xfff6c2,
+        emissiveIntensity: 1.8,
+        roughness: 0.3
+      }),
+      // Red Alert Beacon Material
+      alertBeacon: new THREE.MeshStandardMaterial({
+        color: 0xff0000,
+        emissive: 0x000000,
+        emissiveIntensity: 0.0,
+        roughness: 0.2
+      }),
+      // LCARS Screen Material
+      lcarsBridgeScreen: new THREE.MeshBasicMaterial({
+        map: Textures.lcarsBridge
+      }),
+      lcarsEngineeringScreen: new THREE.MeshBasicMaterial({
+        map: Textures.lcarsEngineering
+      }),
+      // Warp Core Glass Tube
+      coreGlass: new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.35,
+        roughness: 0.05,
+        transmission: 0.85,
+        thickness: 0.6
+      }),
+      // Warp Core Pulsing Energy Core
+      corePlasma: new THREE.MeshStandardMaterial({
+        color: 0x00ffff,
+        emissive: 0x00d4ff,
+        emissiveIntensity: 3.2,
+        roughness: 0.1
+      }),
+      // Deflector Forcefield Bubble (Shields)
+      shieldBubble: new THREE.MeshPhysicalMaterial({
+        color: 0x44ddff,
+        emissive: 0x1188cc,
+        emissiveIntensity: 0.0,
+        transparent: true,
+        opacity: 0.0,
+        roughness: 0.1,
+        transmission: 0.9,
+        wireframe: false,
+        depthWrite: false
+      })
+    };
+
+    /* =========================================================================
+       6. 3D SHIP ARCHITECTURE BUILDER (Extreme procedural detail)
+       ========================================================================= */
+    const shipRoot = new THREE.Group();
+    shipRoot.name = 'USS_ENTERPRISE_NCC_1701_D';
+    scene.add(shipRoot);
+
+    const animatedParts = {
+      warpCoils: [],
+      bussards: [],
+      deflectorMesh: null,
+      warpCoreGlows: [],
+      warpCoreRings: [],
+      redAlertLights: [],
+      strobeLights: [],
+      shieldsMesh: null
+    };
+
+    // Interior Group containers
+    const bridgeGroup = new THREE.Group();
+    bridgeGroup.name = 'BridgeInterior';
+    bridgeGroup.position.set(0, 1000, 0); // Offset in coordinate space for isolation
+    scene.add(bridgeGroup);
+
+    const engineeringGroup = new THREE.Group();
+    engineeringGroup.name = 'EngineeringInterior';
+    engineeringGroup.position.set(0, 2000, 0); // Offset in coordinate space
+    scene.add(engineeringGroup);
+
+    const corridorGroup = new THREE.Group();
+    corridorGroup.name = 'CorridorInterior';
+    corridorGroup.position.set(0, 3000, 0);
+    scene.add(corridorGroup);
+
+    loadingStatus.innerText = 'CONSTRUCTING PRIMARY SAUCER & BRIDGE DOME...';
+
+    /* --- 6.1 EXTERIOR: PRIMARY HULL (SAUCER SECTION) --- */
+    function buildSaucerSection() {
+      const saucerGroup = new THREE.Group();
+      saucerGroup.name = 'Saucer_Section';
+
+      // 1. Galaxy-class Flattened Elliptical Saucer Main Body
+      // Radius: X = 200, Z = 160, Thickness Y = 28
+      const saucerGeom = new THREE.CylinderGeometry(190, 200, 22, 64, 4);
+      saucerGeom.scale(1.0, 1.0, 0.82); // Galaxy-class wider than long ratio
+      const saucerMesh = new THREE.Mesh(saucerGeom, Materials.hull);
+      saucerMesh.castShadow = true;
+      saucerMesh.receiveShadow = true;
+      saucerGroup.add(saucerMesh);
+
+      // 2. Upper Terraced Decks (Deck 2 - Deck 7 step terraces)
+      const upperTerraceGeom = new THREE.CylinderGeometry(110, 150, 14, 48);
+      upperTerraceGeom.scale(1.0, 1.0, 0.82);
+      const upperTerrace = new THREE.Mesh(upperTerraceGeom, Materials.hull);
+      upperTerrace.position.y = 15;
+      saucerGroup.add(upperTerrace);
+
+      const upperTerraceGeom2 = new THREE.CylinderGeometry(60, 100, 10, 48);
+      upperTerraceGeom2.scale(1.0, 1.0, 0.82);
+      const upperTerrace2 = new THREE.Mesh(upperTerraceGeom2, Materials.hull);
+      upperTerrace2.position.y = 24;
+      saucerGroup.add(upperTerrace2);
+
+      // 3. Deck 1: Exterior Bridge Module Dome
+      const bridgeDomeGeom = new THREE.SphereGeometry(22, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.45);
+      bridgeDomeGeom.scale(1.0, 0.45, 1.25);
+      const bridgeDome = new THREE.Mesh(bridgeDomeGeom, Materials.hull);
+      bridgeDome.position.set(0, 28, 4);
+      bridgeDome.userData = { targetDeck: 'bridge', label: '🛸 甲板 1: 主舰桥 (Deck 1 Bridge Module) — 点击直接登舰' };
+      saucerGroup.add(bridgeDome);
+
+      // Bridge Skylight (Deck 1 Observation Glass)
+      const skylightGeom = new THREE.CylinderGeometry(4.5, 4.5, 2, 16);
+      const skylightMesh = new THREE.Mesh(skylightGeom, Materials.windowLight);
+      skylightMesh.position.set(0, 37.5, 4);
+      skylightMesh.userData = { targetDeck: 'bridge', label: '🛸 甲板 1: 主舰桥观察天窗 — 点击登舰漫游' };
+      saucerGroup.add(skylightMesh);
+
+      // 4. Lower Ventral Sensor Dome & Captain's Yacht Docking Recess
+      const lowerDomeGeom = new THREE.SphereGeometry(38, 32, 16, 0, Math.PI * 2, Math.PI * 0.55, Math.PI * 0.45);
+      lowerDomeGeom.scale(1.0, 0.35, 1.4);
+      const lowerDome = new THREE.Mesh(lowerDomeGeom, Materials.hullDark);
+      lowerDome.position.set(0, -12, 10);
+      saucerGroup.add(lowerDome);
+
+      // Captain's Yacht Clamshell Oval Outline
+      const yachtGeom = new THREE.CylinderGeometry(20, 24, 4, 32);
+      yachtGeom.scale(1.0, 1.0, 1.6);
+      const yachtMesh = new THREE.Mesh(yachtGeom, Materials.hull);
+      yachtMesh.position.set(0, -14, 12);
+      saucerGroup.add(yachtMesh);
+
+      // 5. Twin Aft Impulse Engines on Saucer Rim
+      const impulseBoxGeom = new THREE.BoxGeometry(26, 10, 16);
+      const impulsePort = new THREE.Mesh(impulseBoxGeom, Materials.hullDark);
+      impulsePort.position.set(-52, 6, 100);
+      saucerGroup.add(impulsePort);
+
+      const impulsePortGlow = new THREE.Mesh(new THREE.PlaneGeometry(22, 6), Materials.impulseGlow);
+      impulsePortGlow.position.set(-52, 6, 108.1);
+      saucerGroup.add(impulsePortGlow);
+
+      const impulseStarboard = new THREE.Mesh(impulseBoxGeom, Materials.hullDark);
+      impulseStarboard.position.set(52, 6, 100);
+      saucerGroup.add(impulseStarboard);
+
+      const impulseStarboardGlow = new THREE.Mesh(new THREE.PlaneGeometry(22, 6), Materials.impulseGlow);
+      impulseStarboardGlow.position.set(52, 6, 108.1);
+      saucerGroup.add(impulseStarboardGlow);
+
+      // 6. RCS Thruster Quads on Saucer Rim (4 corners)
+      const rcsAngles = [Math.PI * 0.25, Math.PI * 0.75, -Math.PI * 0.25, -Math.PI * 0.75];
+      rcsAngles.forEach(ang => {
+        const rcsMesh = new THREE.Mesh(new THREE.BoxGeometry(8, 6, 10), Materials.hullDark);
+        rcsMesh.position.set(Math.sin(ang) * 192, 0, Math.cos(ang) * 155);
+        rcsMesh.rotation.y = ang;
+        saucerGroup.add(rcsMesh);
+      });
+
+      // 7. Perimeter Cabin Windows Ring (Glowing lights)
+      for (let i = 0; i < 48; i++) {
+        const theta = (i / 48) * Math.PI * 2;
+        const win = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 1), Materials.windowLight);
+        win.position.set(Math.sin(theta) * 196, (i % 2 === 0 ? 3 : -3), Math.cos(theta) * 158);
+        win.lookAt(0, win.position.y, 0);
+        saucerGroup.add(win);
+      }
+
+      saucerGroup.position.set(0, 36, -30);
+      shipRoot.add(saucerGroup);
+    }
+
+    /* --- 6.2 EXTERIOR: CONNECTING DORSAL NECK & SECONDARY HULL --- */
+    function buildEngineeringSection() {
+      const engGroup = new THREE.Group();
+      engGroup.name = 'Engineering_Section';
+
+      // 1. Slender Swept-back Dorsal Neck
+      const neckGeom = new THREE.BoxGeometry(22, 56, 120);
+      const neckMesh = new THREE.Mesh(neckGeom, Materials.hull);
+      neckMesh.position.set(0, 10, 40);
+      neckMesh.rotation.x = -0.22; // graceful swept back rake
+      engGroup.add(neckMesh);
+
+      // Forward Photon Torpedo Launcher (Dual Red Illuminated Tubes)
+      const torpedoHousing = new THREE.Mesh(new THREE.BoxGeometry(16, 12, 18), Materials.hullDark);
+      torpedoHousing.position.set(0, -6, -22);
+      engGroup.add(torpedoHousing);
+
+      const tubeL = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 4, 16), Materials.impulseGlow);
+      tubeL.rotation.x = Math.PI / 2;
+      tubeL.position.set(-4.5, -6, -31);
+      engGroup.add(tubeL);
+
+      const tubeR = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 4, 16), Materials.impulseGlow);
+      tubeR.rotation.x = Math.PI / 2;
+      tubeR.position.set(4.5, -6, -31);
+      engGroup.add(tubeR);
+
+      // 2. Secondary / Engineering Hull Main Fuselage
+      // Tapered organic cylinder
+      const fuselageGeom = new THREE.CylinderGeometry(38, 22, 230, 48);
+      fuselageGeom.scale(1.0, 1.0, 1.25);
+      const fuselageMesh = new THREE.Mesh(fuselageGeom, Materials.hull);
+      fuselageMesh.rotation.x = Math.PI / 2;
+      fuselageMesh.position.set(0, -32, 105);
+      fuselageMesh.userData = { targetDeck: 'engineering', label: '⚡ 甲板 36: 工程舰体 (Engineering Hull) — 点击进入主工程室' };
+      engGroup.add(fuselageMesh);
+
+      // 3. Main Navigational Deflector (Iconic Galaxy-Class Blue & Copper Bowl)
+      const deflectorHousingGeom = new THREE.CylinderGeometry(32, 36, 16, 48);
+      const deflectorHousing = new THREE.Mesh(deflectorHousingGeom, Materials.deflectorHousing);
+      deflectorHousing.rotation.x = Math.PI / 2;
+      deflectorHousing.position.set(0, -28, -6);
+      deflectorHousing.userData = { targetDeck: 'engineering', label: '⚡ 主偏导仪与工程核心区 — 点击进入主工程室' };
+      engGroup.add(deflectorHousing);
+
+      // Deep glowing deflector dish emitter
+      const deflectorCoreGeom = new THREE.SphereGeometry(26, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.4);
+      const deflectorCore = new THREE.Mesh(deflectorCoreGeom, Materials.deflectorCore);
+      deflectorCore.rotation.x = -Math.PI / 2;
+      deflectorCore.position.set(0, -28, -8);
+      deflectorCore.userData = { targetDeck: 'engineering', label: '⚡ 主偏导仪重力子场 — 点击进入主工程室' };
+      engGroup.add(deflectorCore);
+      animatedParts.deflectorMesh = deflectorCore;
+
+      // Deflector Projector Spire in Center
+      const spire = new THREE.Mesh(new THREE.CylinderGeometry(2, 4, 12, 16), Materials.hullDark);
+      spire.rotation.x = Math.PI / 2;
+      spire.position.set(0, -28, -16);
+      engGroup.add(spire);
+
+      // 4. Shuttlebay 2 & 3 at the Stern
+      const bayGeom = new THREE.BoxGeometry(40, 18, 30);
+      const bayMesh = new THREE.Mesh(bayGeom, Materials.hullDark);
+      bayMesh.position.set(0, -22, 205);
+      engGroup.add(bayMesh);
+
+      const bayDoors = new THREE.Mesh(new THREE.PlaneGeometry(32, 14), Materials.hull);
+      bayDoors.position.set(0, -22, 220.2);
+      engGroup.add(bayDoors);
+
+      shipRoot.add(engGroup);
+    }
+
+    /* --- 6.3 EXTERIOR: NACELLE PYLONS & TWIN WARP NACELLES --- */
+    function buildNacelles() {
+      const nacellesGroup = new THREE.Group();
+      nacellesGroup.name = 'Warp_Nacelles';
+
+      // Swept gull-wing pylons
+      function createPylon(isLeft) {
+        const sign = isLeft ? -1 : 1;
+        const pylonGeom = new THREE.BoxGeometry(110, 10, 36);
+        const pylonMesh = new THREE.Mesh(pylonGeom, Materials.hull);
+        pylonMesh.position.set(sign * 75, -12, 130);
+        pylonMesh.rotation.z = sign * 0.42; // upward gull-wing angle
+        pylonMesh.rotation.y = sign * -0.15;
+        return pylonMesh;
+      }
+      nacellesGroup.add(createPylon(true));
+      nacellesGroup.add(createPylon(false));
+
+      // Build Single Warp Nacelle
+      function createNacelle(isLeft) {
+        const sign = isLeft ? -1 : 1;
+        const nacelle = new THREE.Group();
+        nacelle.position.set(sign * 148, 22, 140);
+
+        // Nacelle Main Torpedo Tube Body (Length: 260)
+        const bodyGeom = new THREE.CylinderGeometry(16, 15, 250, 32);
+        bodyGeom.scale(1.0, 1.0, 1.4);
+        const bodyMesh = new THREE.Mesh(bodyGeom, Materials.hull);
+        bodyMesh.rotation.x = Math.PI / 2;
+        nacelle.add(bodyMesh);
+
+        // Front Bussard Ramscoop Collector (Glowing Orange/Red Torus & Cap)
+        const bussardCapGeom = new THREE.SphereGeometry(17, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
+        bussardCapGeom.scale(1.0, 0.8, 1.4);
+        const bussardCap = new THREE.Mesh(bussardCapGeom, Materials.bussard);
+        bussardCap.rotation.x = -Math.PI / 2;
+        bussardCap.position.set(0, 0, -125);
+        nacelle.add(bussardCap);
+        animatedParts.bussards.push(bussardCap);
+
+        // Internal Swirling Plasma Core for Bussard
+        const bussardCore = new THREE.Mesh(new THREE.TorusGeometry(8, 3, 16, 32), Materials.impulseGlow);
+        bussardCore.position.set(0, 0, -118);
+        nacelle.add(bussardCore);
+
+        // Inboard & Outboard Glowing Warp Field Grilles (Cherenkov Blue)
+        const grilleGeom = new THREE.PlaneGeometry(160, 9);
+        // Inboard (facing ship center)
+        const grilleIn = new THREE.Mesh(grilleGeom, Materials.warpGrille);
+        grilleIn.rotation.y = sign * (Math.PI / 2);
+        grilleIn.position.set(-sign * 16.2, 0, 10);
+        nacelle.add(grilleIn);
+        animatedParts.warpCoils.push(grilleIn);
+
+        // Outboard
+        const grilleOut = new THREE.Mesh(grilleGeom, Materials.warpGrille);
+        grilleOut.rotation.y = -sign * (Math.PI / 2);
+        grilleOut.position.set(sign * 16.2, 0, 10);
+        nacelle.add(grilleOut);
+        animatedParts.warpCoils.push(grilleOut);
+
+        // Aft Warp Exhaust Fins & Dark Cowl
+        const exhaustCap = new THREE.Mesh(new THREE.CylinderGeometry(14, 11, 24, 24), Materials.hullDark);
+        exhaustCap.rotation.x = Math.PI / 2;
+        exhaustCap.position.set(0, 0, 132);
+        nacelle.add(exhaustCap);
+
+        // Navigation Strobe & Nav Lights (Port = Red, Starboard = Green)
+        const navColor = isLeft ? 0xff2222 : 0x22ff22;
+        const navLight = new THREE.Mesh(new THREE.SphereGeometry(2.5, 12, 12), new THREE.MeshBasicMaterial({ color: navColor }));
+        navLight.position.set(sign * 18, 8, -115);
+        nacelle.add(navLight);
+
+        // White Aft Blinking Strobe
+        const strobe = new THREE.Mesh(new THREE.SphereGeometry(2.2, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        strobe.position.set(0, 12, 142);
+        nacelle.add(strobe);
+        animatedParts.strobeLights.push(strobe);
+
+        return nacelle;
+      }
+
+      nacellesGroup.add(createNacelle(true));
+      nacellesGroup.add(createNacelle(false));
+
+      shipRoot.add(nacellesGroup);
+    }
+
+    /* --- 6.4 DEFLECTOR SHIELD BUBBLE (Harmonic Forcefield) --- */
+    function buildShieldBubble() {
+      const shieldGeom = new THREE.SphereGeometry(270, 48, 32);
+      shieldGeom.scale(1.0, 0.42, 1.25);
+      const shieldMesh = new THREE.Mesh(shieldGeom, Materials.shieldBubble);
+      shieldMesh.position.set(0, 10, 40);
+      shipRoot.add(shieldMesh);
+      animatedParts.shieldsMesh = shieldMesh;
+    }
+
+    /* =========================================================================
+       7. INTERIOR SPACES (Walkable Decks)
+       ========================================================================= */
+
+    /* --- 7.1 DECK 1: MAIN BRIDGE (主舰桥) --- */
+    function buildDeck1Bridge() {
+      loadingStatus.innerText = 'CONSTRUCTING DECK 1: MAIN BRIDGE & LCARS CONSOLES...';
+
+      // 1. Bridge Chamber (Circular Domed Room, R = 45m, H = 14m)
+      const bridgeWallsGeom = new THREE.CylinderGeometry(48, 48, 16, 48, 1, true);
+      const bridgeWalls = new THREE.Mesh(bridgeWallsGeom, Materials.bridgeWall);
+      bridgeWalls.position.y = 8;
+      bridgeGroup.add(bridgeWalls);
+
+      // Floor Carpet
+      const floorGeom = new THREE.CircleGeometry(48, 48);
+      const floor = new THREE.Mesh(floorGeom, Materials.bridgeCarpet);
+      floor.rotation.x = -Math.PI / 2;
+      bridgeGroup.add(floor);
+
+      // Sunken Command Well (Stepped Center Ring)
+      const commandWellGeom = new THREE.CylinderGeometry(20, 20, 1.2, 32);
+      const commandWell = new THREE.Mesh(commandWellGeom, Materials.hullDark);
+      commandWell.position.set(0, -0.6, 2);
+      bridgeGroup.add(commandWell);
+
+      // 2. Ceiling Skylight & Dome Grids
+      const ceilingGeom = new THREE.SphereGeometry(48, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.35);
+      const ceiling = new THREE.Mesh(ceilingGeom, Materials.hullDark);
+      ceiling.rotation.x = Math.PI;
+      ceiling.position.y = 20;
+      bridgeGroup.add(ceiling);
+
+      // Translucent Skylight Grid in Ceiling Center
+      const skylight = new THREE.Mesh(new THREE.CircleGeometry(16, 24), Materials.windowLight);
+      skylight.rotation.x = Math.PI / 2;
+      skylight.position.set(0, 15.8, 0);
+      bridgeGroup.add(skylight);
+
+      // 3. Iconic Wooden Tactical Horseshoe Arch (战术木质拱门)
+      const archCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-22, 0, -2),
+        new THREE.Vector3(-20, 4.5, 8),
+        new THREE.Vector3(-14, 4.5, 18),
+        new THREE.Vector3(0, 4.5, 21),
+        new THREE.Vector3(14, 4.5, 18),
+        new THREE.Vector3(20, 4.5, 8),
+        new THREE.Vector3(22, 0, -2)
+      ]);
+      const archGeom = new THREE.TubeGeometry(archCurve, 32, 1.4, 16, false);
+      const archMesh = new THREE.Mesh(archGeom, Materials.bridgeWood);
+      bridgeGroup.add(archMesh);
+
+      // Tactical Console Screen in Arch Center
+      const tacScreen = new THREE.Mesh(new THREE.BoxGeometry(10, 1.6, 2.5), Materials.lcarsBridgeScreen);
+      tacScreen.position.set(0, 4.8, 20);
+      tacScreen.rotation.x = 0.3;
+      bridgeGroup.add(tacScreen);
+
+      // 4. Command Seating (Picard Center Chair, Riker Right, Troi Left)
+      function createBridgeChair(isCaptain = false) {
+        const chair = new THREE.Group();
+        // Base
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.8, 1.5, 16), Materials.hullDark);
+        chair.add(base);
+        // Seat cushion
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.0, 3.2), new THREE.MeshStandardMaterial({ color: isCaptain ? 0x6e1b24 : 0x222228, roughness: 0.8 }));
+        seat.position.y = 1.5;
+        chair.add(seat);
+        // Backrest
+        const back = new THREE.Mesh(new THREE.BoxGeometry(3.0, 3.6, 0.8), new THREE.MeshStandardMaterial({ color: isCaptain ? 0x6e1b24 : 0x222228, roughness: 0.8 }));
+        back.position.set(0, 3.2, -1.3);
+        chair.add(back);
+        // Armrests
+        const armL = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 2.8), Materials.bridgeWood);
+        armL.position.set(-1.8, 2.2, 0);
+        chair.add(armL);
+        const armR = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 2.8), Materials.bridgeWood);
+        armR.position.set(1.8, 2.2, 0);
+        chair.add(armR);
+
+        // LCARS armrest mini-screens
+        if (isCaptain) {
+          const armPadL = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 1.2), Materials.lcarsBridgeScreen);
+          armPadL.rotation.x = -Math.PI / 2;
+          armPadL.position.set(-1.8, 2.65, 0.4);
+          chair.add(armPadL);
+        }
+        return chair;
+      }
+
+      // Captain's Chair (Center)
+      const captainChair = createBridgeChair(true);
+      captainChair.position.set(0, 0, 7);
+      bridgeGroup.add(captainChair);
+
+      // Commander Riker (Starboard)
+      const rikerChair = createBridgeChair(false);
+      rikerChair.position.set(4.5, 0, 6.5);
+      rikerChair.rotation.y = -0.15;
+      bridgeGroup.add(rikerChair);
+
+      // Counselor Troi (Port)
+      const troiChair = createBridgeChair(false);
+      troiChair.position.set(-4.5, 0, 6.5);
+      troiChair.rotation.y = 0.15;
+      bridgeGroup.add(troiChair);
+
+      // 5. Forward Helm (Conn) & Ops Consoles (前方领航与操作控制台)
+      function createForwardConsole(xPos, isOps) {
+        const conGroup = new THREE.Group();
+        conGroup.position.set(xPos, 0, -8);
+
+        // Curved Console Desk
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(7, 2.4, 4), Materials.hullDark);
+        desk.position.y = 1.2;
+        conGroup.add(desk);
+
+        // Angled Touch Surface
+        const screen = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 3.4), Materials.lcarsBridgeScreen);
+        screen.rotation.x = -Math.PI * 0.32;
+        screen.position.set(0, 2.45, 0.2);
+        conGroup.add(screen);
+
+        // Low bucket chair
+        const chair = createBridgeChair(false);
+        chair.scale.set(0.85, 0.85, 0.85);
+        chair.position.set(0, 0, 3.2);
+        conGroup.add(chair);
+
+        return conGroup;
+      }
+      bridgeGroup.add(createForwardConsole(-5.5, false)); // Conn (Helm)
+      bridgeGroup.add(createForwardConsole(5.5, true));   // Ops
+
+      // 6. Massive Forward Viewscreen (主全景屏幕)
+      const screenHousing = new THREE.Mesh(new THREE.BoxGeometry(36, 12, 2), Materials.hullDark);
+      screenHousing.position.set(0, 7.5, -46);
+      bridgeGroup.add(screenHousing);
+
+      // Viewscreen Glass display
+      const viewscreenGeom = new THREE.PlaneGeometry(33, 10);
+      const viewscreenMat = new THREE.MeshBasicMaterial({
+        color: 0x050814,
+        transparent: true,
+        opacity: 0.95
+      });
+      const viewscreen = new THREE.Mesh(viewscreenGeom, viewscreenMat);
+      viewscreen.position.set(0, 7.5, -44.9);
+      bridgeGroup.add(viewscreen);
+
+      // Viewscreen Frame LCARS Border
+      const viewBorderL = new THREE.Mesh(new THREE.BoxGeometry(1.2, 10, 0.5), Materials.lcarsBridgeScreen);
+      viewBorderL.position.set(-17, 7.5, -44.8);
+      bridgeGroup.add(viewBorderL);
+      const viewBorderR = new THREE.Mesh(new THREE.BoxGeometry(1.2, 10, 0.5), Materials.lcarsBridgeScreen);
+      viewBorderR.position.set(17, 7.5, -44.8);
+      bridgeGroup.add(viewBorderR);
+
+      // 7. Aft Wall Multi-Station Consoles (Science 1 & 2, Engineering, Environmental)
+      for (let i = -3; i <= 3; i++) {
+        if (i === 0) continue; // Walkway in middle
+        const angle = Math.PI + i * 0.28;
+        const radius = 45;
+        const station = new THREE.Group();
+        station.position.set(Math.sin(angle) * radius, 0, Math.cos(angle) * radius);
+        station.lookAt(0, 0, 0);
+
+        // Station desk
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(9, 3, 4), Materials.hullDark);
+        desk.position.y = 1.5;
+        station.add(desk);
+
+        // Slanted LCARS monitor
+        const mon = new THREE.Mesh(new THREE.PlaneGeometry(8, 3.8), Materials.lcarsBridgeScreen);
+        mon.rotation.x = -0.35;
+        mon.position.set(0, 4.0, 0.8);
+        station.add(mon);
+
+        // Upper overhead display
+        const upperMon = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.5), Materials.lcarsBridgeScreen);
+        upperMon.position.set(0, 7.5, 1.2);
+        upperMon.rotation.x = 0.2;
+        station.add(upperMon);
+
+        bridgeGroup.add(station);
+      }
+
+      // 8. Turbolift Port & Starboard Doors (双侧涡轮电梯门)
+      function createTurboliftDoor(angle, label) {
+        const doorAlcove = new THREE.Group();
+        const r = 46.5;
+        doorAlcove.position.set(Math.sin(angle) * r, 0, Math.cos(angle) * r);
+        doorAlcove.lookAt(0, 0, 0);
+
+        // Door frame
+        const frame = new THREE.Mesh(new THREE.BoxGeometry(9, 9, 3), Materials.bridgeWall);
+        frame.position.y = 4.5;
+        doorAlcove.add(frame);
+
+        // Double Sliding Doors (Red/Burgundy)
+        const doorL = new THREE.Mesh(new THREE.BoxGeometry(3.6, 7.5, 0.4), Materials.bridgeCarpet);
+        doorL.position.set(-1.9, 3.75, 0);
+        doorAlcove.add(doorL);
+
+        const doorR = new THREE.Mesh(new THREE.BoxGeometry(3.6, 7.5, 0.4), Materials.bridgeCarpet);
+        doorR.position.set(1.9, 3.75, 0);
+        doorAlcove.add(doorR);
+
+        // Turbolift Call Button LCARS Panel
+        const callBtn = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.8), Materials.lcarsBridgeScreen);
+        callBtn.position.set(4.4, 4.2, 0.3);
+        doorAlcove.add(callBtn);
+
+        return doorAlcove;
+      }
+      bridgeGroup.add(createTurboliftDoor(-Math.PI * 0.72, 'PORT TURBOLIFT'));
+      bridgeGroup.add(createTurboliftDoor(Math.PI * 0.72, 'STARBOARD TURBOLIFT'));
+
+      // 9. Red Alert Overhead Beacons for Bridge
+      for (let b = 0; b < 6; b++) {
+        const ang = (b / 6) * Math.PI * 2;
+        const beacon = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 1.5, 16), Materials.alertBeacon);
+        beacon.position.set(Math.sin(ang) * 32, 13.5, Math.cos(ang) * 32);
+        bridgeGroup.add(beacon);
+        animatedParts.redAlertLights.push(beacon);
+      }
+
+      // Bridge Ambient Point Light
+      const bridgeLight = new THREE.PointLight(0xfff1dc, 1.3, 80);
+      bridgeLight.position.set(0, 12, 0);
+      bridgeGroup.add(bridgeLight);
+    }
+
+    /* --- 7.2 DECK 36: MAIN ENGINEERING (主工程室与立式曲速核心) --- */
+    function buildDeck36Engineering() {
+      loadingStatus.innerText = 'CONSTRUCTING DECK 36: WARP CORE & MASTER SYSTEMS DISPLAY...';
+
+      // 1. Engineering Hall (Length: 90m, Width: 50m, Height: 24m)
+      const roomGeom = new THREE.BoxGeometry(60, 26, 100);
+      const roomMesh = new THREE.Mesh(roomGeom, Materials.hullDark);
+      roomMesh.material.side = THREE.BackSide;
+      roomMesh.position.y = 13;
+      engineeringGroup.add(roomMesh);
+
+      // Floor
+      const engFloor = new THREE.Mesh(new THREE.PlaneGeometry(60, 100), new THREE.MeshStandardMaterial({ color: 0x20242d, roughness: 0.4 }));
+      engFloor.rotation.x = -Math.PI / 2;
+      engineeringGroup.add(engFloor);
+
+      // 2. THE WARP CORE (曲速核心)
+      // Spans from floor through ceiling (Height: 25m)
+      const coreGroup = new THREE.Group();
+      coreGroup.position.set(0, 0, -15);
+
+      // Vertical Clear Containment Column
+      const tubeGeom = new THREE.CylinderGeometry(4.5, 4.5, 25, 32);
+      const tubeMesh = new THREE.Mesh(tubeGeom, Materials.coreGlass);
+      tubeMesh.position.y = 12.5;
+      coreGroup.add(tubeMesh);
+
+      // Central Dilithium Crystal Articulation Chamber (Heavy collar in middle)
+      const collarGeom = new THREE.CylinderGeometry(6.5, 6.5, 4, 32);
+      const collarMesh = new THREE.Mesh(collarGeom, Materials.deflectorHousing);
+      collarMesh.position.y = 12.5;
+      coreGroup.add(collarMesh);
+
+      // Horizontal Plasma Conduits running towards nacelles
+      const conduitGeom = new THREE.CylinderGeometry(2.8, 2.8, 30, 24);
+      const conduitPort = new THREE.Mesh(conduitGeom, Materials.hull);
+      conduitPort.rotation.z = Math.PI / 2;
+      conduitPort.position.set(-18, 12.5, 0);
+      coreGroup.add(conduitPort);
+
+      const conduitStarboard = new THREE.Mesh(conduitGeom, Materials.hull);
+      conduitStarboard.rotation.z = Math.PI / 2;
+      conduitStarboard.position.set(18, 12.5, 0);
+      coreGroup.add(conduitStarboard);
+
+      // Pulsing Segment Rings inside Warp Core (Upper & Lower Intermix Chutes)
+      const numRings = 16;
+      for (let i = 0; i < numRings; i++) {
+        // Skip the center collar zone
+        const yPos = 2 + (i / numRings) * 21;
+        if (Math.abs(yPos - 12.5) < 2.5) continue;
+
+        const ringGeom = new THREE.TorusGeometry(3.6, 0.45, 16, 32);
+        const ringMat = new THREE.MeshStandardMaterial({
+          color: 0x00d4ff,
+          emissive: 0x00aaff,
+          emissiveIntensity: 2.5
+        });
+        const ringMesh = new THREE.Mesh(ringGeom, ringMat);
+        ringMesh.rotation.x = Math.PI / 2;
+        ringMesh.position.y = yPos;
+        coreGroup.add(ringMesh);
+
+        animatedParts.warpCoreRings.push({
+          mesh: ringMesh,
+          baseY: yPos,
+          isUpper: yPos > 12.5
+        });
+      }
+
+      // Vertical Central Plasma Beam
+      const beamGeom = new THREE.CylinderGeometry(1.6, 1.6, 24, 16);
+      const beamMesh = new THREE.Mesh(beamGeom, Materials.corePlasma);
+      beamMesh.position.y = 12.5;
+      coreGroup.add(beamMesh);
+      animatedParts.warpCoreGlows.push(beamMesh);
+
+      // Intense Point Light at Core Center
+      const corePointLight = new THREE.PointLight(0x00eeff, 3.5, 60);
+      corePointLight.position.y = 12.5;
+      coreGroup.add(corePointLight);
+
+      engineeringGroup.add(coreGroup);
+
+      // 3. Master Systems Display "Pool Table" Console (中央主控台)
+      const tableGroup = new THREE.Group();
+      tableGroup.position.set(0, 0, 18);
+
+      const tableBase = new THREE.Mesh(new THREE.BoxGeometry(16, 2.4, 8), Materials.hullDark);
+      tableBase.position.y = 1.2;
+      tableGroup.add(tableBase);
+
+      const tableGlass = new THREE.Mesh(new THREE.PlaneGeometry(14.5, 6.8), Materials.lcarsEngineeringScreen);
+      tableGlass.rotation.x = -Math.PI / 2;
+      tableGlass.position.y = 2.45;
+      tableGroup.add(tableGlass);
+
+      engineeringGroup.add(tableGroup);
+
+      // 4. Second Floor Observation Walkway & Railing
+      const catwalkGeom = new THREE.BoxGeometry(58, 1, 8);
+      const catwalk = new THREE.Mesh(catwalkGeom, Materials.hull);
+      catwalk.position.set(0, 12, 35);
+      engineeringGroup.add(catwalk);
+
+      const railingGeom = new THREE.CylinderGeometry(0.1, 0.1, 58, 16);
+      const railing = new THREE.Mesh(railingGeom, Materials.bridgeWood);
+      railing.rotation.z = Math.PI / 2;
+      railing.position.set(0, 15, 31);
+      engineeringGroup.add(railing);
+
+      // 5. Engineering LCARS Wall Terminals
+      for (let side = -1; side <= 1; side += 2) {
+        for (let w = 0; w < 3; w++) {
+          const terminal = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), Materials.lcarsEngineeringScreen);
+          terminal.position.set(side * 29.5, 5, -25 + w * 25);
+          terminal.rotation.y = -side * Math.PI / 2;
+          engineeringGroup.add(terminal);
+        }
+      }
+
+      // Red Alert Beacons in Engineering
+      for (let b = 0; b < 4; b++) {
+        const beacon = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 1.5, 16), Materials.alertBeacon);
+        beacon.position.set(-20 + b * 13, 23.5, 0);
+        engineeringGroup.add(beacon);
+        animatedParts.redAlertLights.push(beacon);
+      }
+    }
+
+    /* --- 7.3 CONNECTING CORRIDOR & TURBOLIFT ALCOVE --- */
+    function buildCorridors() {
+      // Curved TNG Style Corridor with carpet & padded walls
+      const corrCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-40, 0, 0),
+        new THREE.Vector3(-20, 0, 15),
+        new THREE.Vector3(0, 0, 20),
+        new THREE.Vector3(20, 0, 15),
+        new THREE.Vector3(40, 0, 0)
+      ]);
+      const tunnelGeom = new THREE.TubeGeometry(corrCurve, 32, 6, 16, false);
+      const tunnelMesh = new THREE.Mesh(tunnelGeom, Materials.bridgeWall);
+      tunnelMesh.material.side = THREE.BackSide;
+      corridorGroup.add(tunnelMesh);
+
+      // Floor runner
+      const runnerGeom = new THREE.TubeGeometry(corrCurve, 32, 5.8, 4, false);
+      const runnerMesh = new THREE.Mesh(runnerGeom, Materials.bridgeCarpet);
+      runnerMesh.position.y = -0.2;
+      corridorGroup.add(runnerMesh);
+
+      // Turbolift Doors at corridor mid-station
+      const doorGeom = new THREE.BoxGeometry(6, 8, 1);
+      const door = new THREE.Mesh(doorGeom, Materials.bridgeCarpet);
+      door.position.set(0, 3.5, 26);
+      corridorGroup.add(door);
+
+      // Sign: "DECK 1 - COMMAND LEVEL"
+      const signMesh = new THREE.Mesh(new THREE.PlaneGeometry(6, 1.5), Materials.lcarsBridgeScreen);
+      signMesh.position.set(0, 8.2, 25.2);
+      corridorGroup.add(signMesh);
+
+      const light = new THREE.PointLight(0xffeedd, 1.2, 40);
+      light.position.set(0, 5, 10);
+      corridorGroup.add(light);
+    }
+
+    /* =========================================================================
+       8. DEEP SPACE ENVIRONMENT & WARP PARTICLES
+       ========================================================================= */
+    let warpParticles, starField;
+
+    function buildSpaceEnvironment() {
+      // 1. Starfield Particles (Thousands of deep space stars)
+      const starsCount = 4500;
+      const starsGeom = new THREE.BufferGeometry();
+      const positions = new Float32Array(starsCount * 3);
+      const colors = new Float32Array(starsCount * 3);
+
+      for (let i = 0; i < starsCount; i++) {
+        const i3 = i * 3;
+        const rad = 2500 + Math.random() * 8000;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+
+        positions[i3] = rad * Math.sin(phi) * Math.cos(theta);
+        positions[i3 + 1] = rad * Math.sin(phi) * Math.sin(theta);
+        positions[i3 + 2] = rad * Math.cos(phi);
+
+        // Varied star spectral classes (O/B blue, A white, K/M orange-red)
+        const spectral = Math.random();
+        if (spectral > 0.8) {
+          colors[i3] = 0.7; colors[i3 + 1] = 0.85; colors[i3 + 2] = 1.0; // Blue
+        } else if (spectral > 0.6) {
+          colors[i3] = 1.0; colors[i3 + 1] = 0.8; colors[i3 + 2] = 0.6; // Amber
+        } else {
+          colors[i3] = 0.95; colors[i3 + 1] = 0.95; colors[i3 + 2] = 1.0; // White
+        }
+      }
+
+      starsGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      starsGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const starsMat = new THREE.PointsMaterial({
+        size: 8,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.9
+      });
+      starField = new THREE.Points(starsGeom, starsMat);
+      scene.add(starField);
+
+      // 2. Warp Streaks Particle Tunnel (Active during Warp 9)
+      const warpCount = 2000;
+      const warpGeom = new THREE.BufferGeometry();
+      const warpPos = new Float32Array(warpCount * 3);
+      for (let i = 0; i < warpCount; i++) {
+        warpPos[i * 3] = (Math.random() - 0.5) * 600;
+        warpPos[i * 3 + 1] = (Math.random() - 0.5) * 400;
+        warpPos[i * 3 + 2] = -1500 + Math.random() * 3000;
+      }
+      warpGeom.setAttribute('position', new THREE.BufferAttribute(warpPos, 3));
+      const warpMat = new THREE.PointsMaterial({
+        color: 0x44ddff,
+        size: 6,
+        transparent: true,
+        opacity: 0.0
+      });
+      warpParticles = new THREE.Points(warpGeom, warpMat);
+      scene.add(warpParticles);
+
+      // 3. Beautiful Ringed Gas Giant Planet in distance
+      const planetGroup = new THREE.Group();
+      planetGroup.position.set(2800, -600, -4200);
+
+      const planetGeom = new THREE.SphereGeometry(650, 48, 48);
+      const planetMat = new THREE.MeshStandardMaterial({
+        color: 0x3d6e99,
+        roughness: 0.7,
+        metalness: 0.1
+      });
+      const planet = new THREE.Mesh(planetGeom, planetMat);
+      planetGroup.add(planet);
+
+      // Planetary Rings
+      const ringGeom = new THREE.RingGeometry(850, 1400, 64);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0x88bbdd,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.65
+      });
+      const ring = new THREE.Mesh(ringGeom, ringMat);
+      ring.rotation.x = Math.PI * 0.45;
+      planetGroup.add(ring);
+
+      scene.add(planetGroup);
+
+      // 4. Lighting Rig
+      // Distant Primary Star (Sun)
+      const sunLight = new THREE.DirectionalLight(0xfff8ee, 2.2);
+      sunLight.position.set(1200, 800, 1500);
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 2048;
+      sunLight.shadow.mapSize.height = 2048;
+      sunLight.shadow.camera.near = 100;
+      sunLight.shadow.camera.far = 4000;
+      const d = 400;
+      sunLight.shadow.camera.left = -d;
+      sunLight.shadow.camera.right = d;
+      sunLight.shadow.camera.top = d;
+      sunLight.shadow.camera.bottom = -d;
+      scene.add(sunLight);
+
+      // Ambient Space Fill (Subtle blue-gray tone from nebula)
+      const ambientLight = new THREE.AmbientLight(0x182030, 0.85);
+      scene.add(ambientLight);
+
+      // Starfleet Saucer Spotlights (Hull illumination lights)
+      const floodLight1 = new THREE.SpotLight(0xffffff, 4.0, 300, Math.PI * 0.25, 0.4);
+      floodLight1.position.set(0, 90, 80);
+      floodLight1.target = shipRoot;
+      scene.add(floodLight1);
+    }
+
+    /* =========================================================================
+       9. ASSEMBLE ALL COMPONENTS
+       ========================================================================= */
+    buildSaucerSection();
+    buildEngineeringSection();
+    buildNacelles();
+    buildShieldBubble();
+
+    buildDeck1Bridge();
+    buildDeck36Engineering();
+    buildCorridors();
+
+    buildSpaceEnvironment();
+
+    // Hide loading screen smoothly
+    setTimeout(() => {
+      loadingScreen.style.opacity = '0';
+      loadingScreen.style.visibility = 'hidden';
+      starfleetAudio.playChirp('high');
+    }, 1200);
+
+    /* =========================================================================
+       10. NAVIGATION, INTERACTION & LOCATION SWITCHER
+       ========================================================================= */
+    const locations = {
+      exterior: {
+        pos: new THREE.Vector3(0, 180, 520),
+        target: new THREE.Vector3(0, 10, 0),
+        tip: '💡 外部模式：按住鼠标左键旋转视角，滚轮缩放，右键平移。点击左侧面板可随时登舰进入主舰桥或主工程室漫游！'
+      },
+      bridge: {
+        pos: new THREE.Vector3(0, 1004.5, 12),
+        target: new THREE.Vector3(0, 1004.5, -30),
+        tip: '🛸 舰桥漫游：已进入主舰桥！点击画面锁定鼠标（WASD 移动，鼠标环视视口，ESC 解除锁定）。'
+      },
+      engineering: {
+        pos: new THREE.Vector3(0, 2004.5, 32),
+        target: new THREE.Vector3(0, 2012, -15),
+        tip: '⚡ 工程室漫游：已到达曲速核心！点击画面开启第一人称漫游（WASD 走动，鼠标观察垂直等离子流与主控台）。'
+      },
+      corridor: {
+        pos: new THREE.Vector3(0, 3004.5, 5),
+        target: new THREE.Vector3(0, 3004.5, 25),
+        tip: '🚪 走廊漫游：探索甲板通道与涡轮电梯！点击画面漫游，按 ESC 退出鼠标锁定。'
+      }
+    };
+
+    window.switchLocation = function(locKey) {
+      if (!locations[locKey]) return;
+      STATE.location = locKey;
+      starfleetAudio.playChirp('door');
+
+      // Update button visual states
+      document.querySelectorAll('.deck-buttons .lcars-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-' + locKey);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const loc = locations[locKey];
+      tipContent.innerText = loc.tip;
+
+      if (locKey === 'exterior') {
+        pointerControls.unlock();
+        crosshair.style.display = 'none';
+        orbitControls.enabled = true;
+        camera.position.copy(loc.pos);
+        orbitControls.target.copy(loc.target);
+        orbitControls.update();
+        document.getElementById('val-location').innerText = 'SECTOR 001 · EARTH ORBIT';
+      } else {
+        orbitControls.enabled = false;
+        camera.position.copy(loc.pos);
+        camera.lookAt(loc.target);
+        crosshair.style.display = 'block';
+
+        if (locKey === 'bridge') {
+          document.getElementById('val-location').innerText = 'DECK 01 · MAIN BRIDGE';
+        } else if (locKey === 'engineering') {
+          document.getElementById('val-location').innerText = 'DECK 36 · MAIN ENGINEERING';
+        } else {
+          document.getElementById('val-location').innerText = 'DECK 02 · CORRIDOR JUNCTION';
+        }
+      }
+    };
+
+    // Click canvas to engage PointerLock when inside interior or click ship modules to enter decks in exterior mode
+    renderer.domElement.addEventListener('click', (event) => {
+      if (STATE.location !== 'exterior') {
+        pointerControls.lock();
+      } else {
+        // Raycast against ship modules
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects(shipRoot.children, true);
+        for (let i = 0; i < intersects.length; i++) {
+          const obj = intersects[i].object;
+          if (obj.userData && obj.userData.targetDeck) {
+            switchLocation(obj.userData.targetDeck);
+            break;
+          }
+        }
+      }
+    });
+
+    // Pointer move for hover tips in exterior orbit view
+    renderer.domElement.addEventListener('pointermove', (event) => {
+      if (STATE.location === 'exterior') {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects(shipRoot.children, true);
+        let found = false;
+        for (let i = 0; i < intersects.length; i++) {
+          const obj = intersects[i].object;
+          if (obj.userData && obj.userData.label) {
+            tipContent.innerText = obj.userData.label;
+            document.body.style.cursor = 'pointer';
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          tipContent.innerText = locations.exterior.tip;
+          document.body.style.cursor = 'default';
+        }
+      } else {
+        document.body.style.cursor = 'default';
+      }
+    });
+
+    /* --- Keyboard Controls for First Person Interior --- */
+    window.addEventListener('keydown', (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp': STATE.moveForward = true; break;
+        case 'KeyS': case 'ArrowDown': STATE.moveBackward = true; break;
+        case 'KeyA': case 'ArrowLeft': STATE.moveLeft = true; break;
+        case 'KeyD': case 'ArrowRight': STATE.moveRight = true; break;
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      switch (e.code) {
+        case 'KeyW': case 'ArrowUp': STATE.moveForward = false; break;
+        case 'KeyS': case 'ArrowDown': STATE.moveBackward = false; break;
+        case 'KeyA': case 'ArrowLeft': STATE.moveLeft = false; break;
+        case 'KeyD': case 'ArrowRight': STATE.moveRight = false; break;
+      }
+    });
+
+    /* --- Tactical Actions --- */
+    window.toggleRedAlert = function() {
+      STATE.redAlert = !STATE.redAlert;
+      const btn = document.getElementById('btn-red-alert');
+      const alertText = document.getElementById('alert-text');
+      const body = document.body;
+
+      if (STATE.redAlert) {
+        btn.classList.add('active');
+        body.classList.add('red-alert-active');
+        alertText.innerText = '🚨 警报解除 (STAND DOWN)';
+        starfleetAudio.startRedAlert();
+        starfleetAudio.playChirp('high');
+      } else {
+        btn.classList.remove('active');
+        body.classList.remove('red-alert-active');
+        alertText.innerText = '🚨 红色警报 (RED ALERT)';
+        starfleetAudio.stopRedAlert();
+        starfleetAudio.playChirp('normal');
+      }
+    };
+
+    window.toggleWarpDrive = function() {
+      STATE.warpActive = !STATE.warpActive;
+      const btn = document.getElementById('btn-warp');
+      const warpText = document.getElementById('warp-text');
+
+      if (STATE.warpActive) {
+        btn.classList.add('active');
+        warpText.innerText = '✨ 退出曲速 (WARP DROP)';
+        document.getElementById('val-warp-power').innerText = '14.8 TW (WARP 9.6)';
+        starfleetAudio.playWarpSound();
+      } else {
+        btn.classList.remove('active');
+        warpText.innerText = '✨ 曲速跃迁 (ENGAGE WARP 9)';
+        document.getElementById('val-warp-power').innerText = '1.21 TW (NORMAL)';
+        starfleetAudio.playChirp('normal');
+      }
+    };
+
+    window.toggleShields = function() {
+      STATE.shieldsActive = !STATE.shieldsActive;
+      const btn = document.getElementById('btn-shields');
+      const statusText = document.getElementById('shield-status');
+
+      if (STATE.shieldsActive) {
+        btn.classList.add('active');
+        statusText.innerText = 'MAX POWER';
+        starfleetAudio.playChirp('high');
+      } else {
+        btn.classList.remove('active');
+        statusText.innerText = 'OFFLINE';
+        starfleetAudio.playChirp('normal');
+      }
+    };
+
+    window.cycleCameraAngle = function() {
+      if (STATE.location !== 'exterior') {
+        switchLocation('exterior');
+      }
+      const angles = [
+        { pos: new THREE.Vector3(0, 180, 520), target: new THREE.Vector3(0, 10, 0) }, // Front Quarter
+        { pos: new THREE.Vector3(-380, 80, -220), target: new THREE.Vector3(0, 0, 80) }, // Nacelles & Deflector
+        { pos: new THREE.Vector3(0, 480, 0), target: new THREE.Vector3(0, 0, 0) }, // Top Saucer Plan
+        { pos: new THREE.Vector3(0, 20, -420), target: new THREE.Vector3(0, -10, 0) }, // Forward Bow Charge
+        { pos: new THREE.Vector3(260, -120, 280), target: new THREE.Vector3(0, 0, 40) } // Ventral Beauty
+      ];
+      STATE.orbitIndex = (STATE.orbitIndex + 1) % angles.length;
+      const targetCam = angles[STATE.orbitIndex];
+
+      camera.position.copy(targetCam.pos);
+      orbitControls.target.copy(targetCam.target);
+      orbitControls.update();
+      starfleetAudio.playChirp('normal');
+    };
+
+    window.toggleCinematicMode = function() {
+      STATE.cinematic = !STATE.cinematic;
+      document.body.classList.toggle('cinematic-mode', STATE.cinematic);
+      starfleetAudio.playChirp('normal');
+    };
+
+    /* =========================================================================
+       11. REALTIME ANIMATION LOOP & PHYSICS
+       ========================================================================= */
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      STATE.time += delta;
+
+      // 1. Exterior Ship Sub-systems Animations
+      if (animatedParts.deflectorMesh) {
+        // Glowing pulsation of deflector dish
+        const deflectorPulse = 2.4 + Math.sin(STATE.time * 2.8) * 0.5;
+        Materials.deflectorCore.emissiveIntensity = deflectorPulse;
+      }
+
+      // Bussard Ramscoop rotation & fiery swirl
+      animatedParts.bussards.forEach(bussard => {
+        bussard.rotation.z += delta * 1.5;
+        Materials.bussard.emissiveIntensity = 2.0 + Math.sin(STATE.time * 4.0) * 0.4;
+      });
+
+      // Warp Nacelle Coils Pulse
+      const coilPulse = STATE.warpActive ? 4.5 + Math.sin(STATE.time * 12.0) * 1.2 : 2.5 + Math.sin(STATE.time * 2.0) * 0.4;
+      Materials.warpGrille.emissiveIntensity = coilPulse;
+
+      // Blinking Strobes (1.2s flash cycle)
+      const strobeOn = (STATE.time % 1.2) < 0.12;
+      animatedParts.strobeLights.forEach(strobe => {
+        strobe.material.color.setHex(strobeOn ? 0xffffff : 0x222222);
+      });
+
+      // Red Alert Beacon Strobing
+      if (STATE.redAlert) {
+        const alertIntensity = (Math.sin(STATE.time * 8.0) > 0) ? 3.0 : 0.0;
+        Materials.alertBeacon.emissive.setHex(0xff0000);
+        Materials.alertBeacon.emissiveIntensity = alertIntensity;
+      } else {
+        Materials.alertBeacon.emissiveIntensity = 0.0;
+      }
+
+      // Shields Bubble Harmonics
+      if (animatedParts.shieldsMesh) {
+        if (STATE.shieldsActive) {
+          Materials.shieldBubble.opacity = THREE.MathUtils.lerp(Materials.shieldBubble.opacity, 0.45, delta * 3);
+          Materials.shieldBubble.emissiveIntensity = 0.6 + Math.sin(STATE.time * 3.5) * 0.3;
+        } else {
+          Materials.shieldBubble.opacity = THREE.MathUtils.lerp(Materials.shieldBubble.opacity, 0.0, delta * 4);
+        }
+      }
+
+      // 2. Interior Warp Core Vertical Pulse Animation (Main Engineering)
+      animatedParts.warpCoreRings.forEach(item => {
+        // Upper stream moves DOWN towards dilithium chamber (y = 12.5)
+        // Lower stream moves UP towards dilithium chamber (y = 12.5)
+        const speed = STATE.warpActive ? 8.0 : 2.5;
+        let offset = (STATE.time * speed) % 8.0;
+        if (item.isUpper) {
+          item.mesh.position.y = item.baseY - (offset * 0.6);
+          if (item.mesh.position.y < 13.5) item.mesh.position.y += 10.0;
+        } else {
+          item.mesh.position.y = item.baseY + (offset * 0.6);
+          if (item.mesh.position.y > 11.5) item.mesh.position.y -= 10.0;
+        }
+      });
+
+      // 3. Warp Jump Sequence (Particles streak past ship)
+      if (STATE.warpActive) {
+        STATE.warpSpeed = THREE.MathUtils.lerp(STATE.warpSpeed, 1.0, delta * 2.0);
+        warpParticles.material.opacity = STATE.warpSpeed * 0.9;
+        const positions = warpParticles.geometry.attributes.position.array;
+        for (let i = 2; i < positions.length; i += 3) {
+          positions[i] -= 1800 * delta * STATE.warpSpeed;
+          if (positions[i] < -1500) positions[i] += 3000;
+        }
+        warpParticles.geometry.attributes.position.needsUpdate = true;
+      } else if (STATE.warpSpeed > 0.01) {
+        STATE.warpSpeed = THREE.MathUtils.lerp(STATE.warpSpeed, 0.0, delta * 3.0);
+        warpParticles.material.opacity = STATE.warpSpeed * 0.9;
+      }
+
+      // 4. First-Person Interior Navigation Physics
+      if (STATE.location !== 'exterior') {
+        const speed = 28.0;
+        STATE.velocity.x -= STATE.velocity.x * 10.0 * delta;
+        STATE.velocity.z -= STATE.velocity.z * 10.0 * delta;
+
+        STATE.direction.z = Number(STATE.moveForward) - Number(STATE.moveBackward);
+        STATE.direction.x = Number(STATE.moveRight) - Number(STATE.moveLeft);
+        STATE.direction.normalize();
+
+        if (STATE.moveForward || STATE.moveBackward) STATE.velocity.z -= STATE.direction.z * speed * delta;
+        if (STATE.moveLeft || STATE.moveRight) STATE.velocity.x -= STATE.direction.x * speed * delta;
+
+        pointerControls.moveRight(-STATE.velocity.x * delta);
+        pointerControls.moveForward(-STATE.velocity.z * delta);
+
+        // Keep inside room boundary checks
+        if (STATE.location === 'bridge') {
+          // Keep within circular radius R=44m
+          const dist = Math.sqrt(camera.position.x * camera.position.x + (camera.position.z) * (camera.position.z));
+          if (dist > 44) {
+            camera.position.x *= 44 / dist;
+            camera.position.z *= 44 / dist;
+          }
+          camera.position.y = 1004.5; // Locked eye height on Bridge deck
+        } else if (STATE.location === 'engineering') {
+          // Keep within room box
+          camera.position.x = Math.max(-26, Math.min(26, camera.position.x));
+          camera.position.z = Math.max(-46, Math.min(46, camera.position.z));
+          camera.position.y = 2004.5; // Locked eye height on Engineering deck
+        } else if (STATE.location === 'corridor') {
+          camera.position.x = Math.max(-36, Math.min(36, camera.position.x));
+          camera.position.z = Math.max(0, Math.min(28, camera.position.z));
+          camera.position.y = 3004.5;
+        }
+      } else {
+        orbitControls.update();
+      }
+
+      // Gentle Starship idle sway in orbital mode
+      if (STATE.location === 'exterior') {
+        shipRoot.rotation.z = Math.sin(STATE.time * 0.3) * 0.02;
+        shipRoot.rotation.x = Math.sin(STATE.time * 0.25) * 0.015;
+      }
+
+      if (composer) {
+        composer.render();
+      } else {
+        renderer.render(scene, camera);
+      }
+    }
+
+    animate();
+
+    /* =========================================================================
+       12. RESIZE HANDLER
+       ========================================================================= */
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      if (composer) composer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

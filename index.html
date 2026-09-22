@@ -112,13 +112,28 @@
 
   /* ---------- tabs ---------- */
   .tabs{
-    display:grid;
-    grid-template-columns:repeat(6,minmax(120px,1fr));
+    display:flex;
+    flex-wrap:nowrap;
     gap:var(--gap);
-    padding:var(--gap) clamp(14px,3vw,28px) 0;
+    padding:var(--gap) clamp(14px,3vw,28px) calc(var(--gap) * .6);
+    overflow-x:auto;
+    overflow-y:hidden;
+    cursor:grab;
+    scrollbar-width:thin;
+    scrollbar-color:var(--panel-line) transparent;
+    -webkit-overflow-scrolling:touch;
+    scroll-behavior:smooth;
   }
+  .tabs.is-dragging{cursor:grabbing; scroll-behavior:auto;}
+  .tabs.is-dragging .tab{pointer-events:none;}
+  .tabs::-webkit-scrollbar{height:5px;}
+  .tabs::-webkit-scrollbar-track{background:transparent;}
+  .tabs::-webkit-scrollbar-thumb{background:var(--panel-line); border-radius:3px;}
+  .tabs::-webkit-scrollbar-thumb:hover{background:var(--amber);}
   .tab{
     position:relative;
+    flex:0 0 auto;
+    width:132px;
     border:none;
     cursor:pointer;
     text-align:left;
@@ -135,14 +150,9 @@
     opacity:0;
     transform:translateX(-8px);
     animation:sweepIn .45s ease-out forwards;
+    animation-delay:calc(.05s * var(--i, 0) + .17s);
     transition:background .18s, box-shadow .18s, transform .12s;
   }
-  .tabs .tab:nth-child(1){animation-delay:.22s;}
-  .tabs .tab:nth-child(2){animation-delay:.27s;}
-  .tabs .tab:nth-child(3){animation-delay:.32s;}
-  .tabs .tab:nth-child(4){animation-delay:.37s;}
-  .tabs .tab:nth-child(5){animation-delay:.42s;}
-  .tabs .tab:nth-child(6){animation-delay:.47s;}
   .tab:hover{background:#141b30;}
   .tab:active{transform:translateX(-8px) scale(.98);}
   .tab .idx{
@@ -282,12 +292,11 @@
   }
 
   @media (max-width:860px){
-    .tabs{grid-template-columns:repeat(3,minmax(100px,1fr));}
     .brand h1{font-size:13px;}
     .topbar-fill .caption{display:none;}
   }
   @media (max-width:480px){
-    .tabs{grid-template-columns:repeat(2,minmax(100px,1fr));}
+    .tab{width:112px;}
     .viewscreen{min-height:280px;}
   }
 </style>
@@ -330,19 +339,24 @@
   "use strict";
 
   // 模型配置：key 用于 URL hash，path 是相对本页的入口地址
+  // 标签顺序按各模型的公开发布日期排列
   var MODELS = [
-    { key:"astra",   name:"ASTRA",   accent:"#ffb454", path:"astra/",
-      flag:"单文件 · ~0.8MB", note:"astra — 单个 index.html 内嵌全部代码/纹理/音效，build.mjs 打包生成，唯一严格满足“单文件”要求的实现。" },
-    { key:"grok46",  name:"GROK 4.6",accent:"#6fb1e0", path:"grok4.6/dist/",
-      flag:"Vite 构建产物", note:"grok4.6 — Vite 工程，演示用 npm run build 产出的 dist/；base 已改为相对路径以适配子目录部署。" },
-    { key:"grok47",  name:"GROK 4.7",accent:"#d9a566", path:"grok4.7/enterprise.html",
-      flag:"单文件", note:"grok4.7 — 单个 enterprise.html（非 index.html），内部用 <script type=\"module\"> + importmap 加载 Three.js。" },
-    { key:"opus46",  name:"OPUS 4.6",accent:"#e0776f", path:"opus4.6/",
-      flag:"多文件 · CDN", note:"opus4.6 — index.html + 独立 js/css，Three.js 走 jsdelivr CDN importmap，静态托管无需改动。" },
-    { key:"opus5",   name:"OPUS 5",  accent:"#9e9be0", path:"opus5/",
-      flag:"多文件 · CDN", note:"opus5 — 原 importmap 指向本机 /node_modules/three，部署会 404，已改为 jsdelivr CDN。场景包含约 1900 扇独立舷窗，加载和首次渲染可能需要 10~20 秒。" },
-    { key:"sonnet5", name:"SONNET 5",accent:"#cc99cc", path:"sonnet5/",
-      flag:"多文件 · CDN", note:"sonnet5 — importmap 已改为 jsdelivr CDN；原版 src/interior/rooms/shell.js:14 调用的未定义函数 backWindowWall（后墙开窗）已补上，「舰长舱」「观景休息室」窗户均正常渲染。" }
+    { key:"opus46",  name:"OPUS 4.6",accent:"#e0776f", path:"opus4.6/", date:"2026-02-05",
+      flag:"多文件 · CDN", note:"opus4.6（发布于 2026-02-05）— index.html + 独立 js/css，Three.js 走 jsdelivr CDN importmap，静态托管无需改动。" },
+    { key:"gemini31", name:"GEMINI 3.1 PRO",accent:"#4a90d9", path:"gemini3.1pro/enterprise.html", date:"2026-02-19",
+      flag:"单文件 · CDN", note:"gemini3.1pro（发布于 2026-02-19）— 单个 enterprise.html，importmap 经 unpkg 加载 Three.js。" },
+    { key:"sonnet5", name:"SONNET 5",accent:"#cc99cc", path:"sonnet5/", date:"2026-06-30",
+      flag:"多文件 · CDN", note:"sonnet5（发布于 2026-06-30）— importmap 已改为 jsdelivr CDN；原版 src/interior/rooms/shell.js:14 调用的未定义函数 backWindowWall（后墙开窗）已补上，「舰长舱」「观景休息室」窗户均正常渲染。" },
+    { key:"opus5",   name:"OPUS 5",  accent:"#9e9be0", path:"opus5/", date:"2026-07-24",
+      flag:"多文件 · CDN", note:"opus5（发布于 2026-07-24）— 原 importmap 指向本机 /node_modules/three，部署会 404，已改为 jsdelivr CDN。场景包含约 1900 扇独立舷窗，加载和首次渲染可能需要 10~20 秒。" },
+    { key:"grok46",  name:"GROK 4.6",accent:"#6fb1e0", path:"grok4.6/dist/", date:"2026-08-12",
+      flag:"Vite 构建产物", note:"grok4.6（发布于 2026-08-12）— Vite 工程，演示用 npm run build 产出的 dist/；base 已改为相对路径以适配子目录部署。" },
+    { key:"gemini38", name:"GEMINI 3.8 FLASH",accent:"#5fd4a3", path:"gemini3.8flash/", date:"2026-09-02",
+      flag:"单文件 · CDN", note:"gemini3.8flash（发布于 2026-09-02）— 单个 index.html，Three.js r128 经 cdnjs/jsdelivr 引入，静态托管无需改动。" },
+    { key:"astra",   name:"ASTRA (GPT-6)",accent:"#ffb454", path:"astra/", date:"2026-09-03",
+      flag:"单文件 · ~0.8MB", note:"astra（GPT-6 Astra，发布于 2026-09-03）— 单个 index.html 内嵌全部代码/纹理/音效，build.mjs 打包生成，唯一严格满足“单文件”要求的实现。" },
+    { key:"grok47",  name:"GROK 4.7",accent:"#d9a566", path:"grok4.7/enterprise.html", date:"2026-09-21",
+      flag:"单文件", note:"grok4.7（发布于 2026-09-21）— 单个 enterprise.html（非 index.html），内部用 <script type=\"module\"> + importmap 加载 Three.js。" }
   ];
 
   var tabsEl = document.getElementById("tabs");
@@ -356,16 +370,54 @@
     var btn = document.createElement("button");
     btn.className = "tab" + (m.fault ? " is-fault" : "");
     btn.style.setProperty("--accent", m.accent);
+    btn.style.setProperty("--i", i);
     btn.dataset.key = m.key;
     btn.setAttribute("role", "tab");
     btn.innerHTML =
-      '<span class="idx">0' + (i+1) + '</span>' +
+      '<span class="idx">' + String(i+1).padStart(2,"0") + '</span>' +
       '<span class="name">' + m.name + '</span>' +
       '<span class="flag">' + m.flag + '</span>' +
       '<span class="led"></span>';
     btn.addEventListener("click", function(){ select(m.key, true); });
     tabsEl.appendChild(btn);
   });
+
+  // 左右无限拖动：鼠标按住横向拖拽滚动 tabs 列表
+  (function enableDragScroll(){
+    var isDown = false, moved = false, startX = 0, startScroll = 0;
+
+    tabsEl.addEventListener("mousedown", function(e){
+      isDown = true;
+      moved = false;
+      startX = e.pageX;
+      startScroll = tabsEl.scrollLeft;
+      tabsEl.classList.add("is-dragging");
+    });
+    window.addEventListener("mousemove", function(e){
+      if (!isDown) return;
+      var dx = e.pageX - startX;
+      if (Math.abs(dx) > 4) moved = true;
+      tabsEl.scrollLeft = startScroll - dx;
+    });
+    window.addEventListener("mouseup", function(){
+      if (!isDown) return;
+      isDown = false;
+      tabsEl.classList.remove("is-dragging");
+      // 松手后立即产生的 click（若有）先于这个 setTimeout(0) 执行，
+      // 之后无论如何把 moved 复位，避免遗留状态吞掉下一次正常点击
+      setTimeout(function(){ moved = false; }, 0);
+    });
+    // 拖动后紧跟的一次 click 视为拖拽，不触发切换
+    tabsEl.addEventListener("click", function(e){
+      if (moved){ e.stopPropagation(); e.preventDefault(); moved = false; }
+    }, true);
+    // 支持鼠标滚轮纵向手势转横向滚动
+    tabsEl.addEventListener("wheel", function(e){
+      if (e.deltaY === 0) return;
+      tabsEl.scrollLeft += e.deltaY;
+      e.preventDefault();
+    }, { passive:false });
+  })();
 
   function findModel(key){
     for (var i=0;i<MODELS.length;i++) if (MODELS[i].key === key) return MODELS[i];
