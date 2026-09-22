@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MODELABILITY — 舰队渲染对比控制台</title>
+<meta name="description" content="同一提示词，六个模型各自生成的 USS Enterprise 3D 场景，一屏切换对比。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05070c;
+    --bg-deep:#020305;
+    --panel:#0d1220;
+    --panel-line:#1c2740;
+    --ink:#dfe6f2;
+    --ink-dim:#7d8ba6;
+    --amber:#ffb454;
+    --alert:#ff5c5c;
+    --ok:#5be08a;
+    --radius:26px;
+    --gap:10px;
+    --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+    --display:"Michroma","JetBrains Mono",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);}
+  body{
+    color:var(--ink);
+    font-family:var(--mono);
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    overflow-x:hidden;
+    background:
+      radial-gradient(1px 1px at 8% 22%, rgba(255,255,255,.55) 0, transparent 60%),
+      radial-gradient(1px 1px at 24% 68%, rgba(255,255,255,.4) 0, transparent 60%),
+      radial-gradient(1.5px 1.5px at 46% 12%, rgba(255,255,255,.5) 0, transparent 60%),
+      radial-gradient(1px 1px at 62% 78%, rgba(255,255,255,.35) 0, transparent 60%),
+      radial-gradient(1.5px 1.5px at 81% 34%, rgba(255,255,255,.5) 0, transparent 60%),
+      radial-gradient(1px 1px at 93% 58%, rgba(255,255,255,.4) 0, transparent 60%),
+      radial-gradient(1px 1px at 15% 88%, rgba(255,255,255,.3) 0, transparent 60%),
+      linear-gradient(180deg,var(--bg) 0%,var(--bg-deep) 100%);
+  }
+  a{color:inherit;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;
+    align-items:stretch;
+    gap:var(--gap);
+    padding:14px clamp(14px,3vw,28px) 0;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--amber);
+    color:#1a1204;
+    border-radius:var(--radius) 8px 8px var(--radius);
+    padding:10px 26px 10px 20px;
+    flex:0 0 auto;
+    opacity:0;
+    animation:sweepIn .5s ease-out .05s forwards;
+  }
+  .brand .chip{
+    width:14px;height:14px;border-radius:50%;
+    background:#1a1204;
+    box-shadow:0 0 0 3px rgba(26,18,4,.15);
+  }
+  .brand h1{
+    font-family:var(--display);
+    font-size:clamp(15px,2vw,20px);
+    letter-spacing:.06em;
+    margin:0;
+    white-space:nowrap;
+  }
+  .topbar-fill{
+    flex:1 1 auto;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    opacity:0;
+    animation:sweepIn .5s ease-out .12s forwards;
+  }
+  .topbar-fill .caption{
+    color:var(--ink-dim);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+  .stardate{
+    font-size:12px;
+    letter-spacing:.08em;
+    color:var(--amber);
+    white-space:nowrap;
+  }
+  .stardate b{color:var(--ink);font-weight:600;}
+  .topbar-cap{
+    flex:0 0 auto;
+    width:34px;
+    background:var(--panel-line);
+    border-radius:8px var(--radius) var(--radius) 8px;
+    opacity:0;
+    animation:sweepIn .5s ease-out .18s forwards;
+  }
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    display:grid;
+    grid-template-columns:repeat(6,minmax(120px,1fr));
+    gap:var(--gap);
+    padding:var(--gap) clamp(14px,3vw,28px) 0;
+  }
+  .tab{
+    position:relative;
+    border:none;
+    cursor:pointer;
+    text-align:left;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-left:5px solid var(--accent);
+    border-radius:6px 14px 14px 6px;
+    color:var(--ink);
+    font-family:var(--mono);
+    padding:10px 14px 9px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    opacity:0;
+    transform:translateX(-8px);
+    animation:sweepIn .45s ease-out forwards;
+    transition:background .18s, box-shadow .18s, transform .12s;
+  }
+  .tabs .tab:nth-child(1){animation-delay:.22s;}
+  .tabs .tab:nth-child(2){animation-delay:.27s;}
+  .tabs .tab:nth-child(3){animation-delay:.32s;}
+  .tabs .tab:nth-child(4){animation-delay:.37s;}
+  .tabs .tab:nth-child(5){animation-delay:.42s;}
+  .tabs .tab:nth-child(6){animation-delay:.47s;}
+  .tab:hover{background:#141b30;}
+  .tab:active{transform:translateX(-8px) scale(.98);}
+  .tab .idx{
+    font-size:10px;color:var(--ink-dim);letter-spacing:.12em;
+  }
+  .tab .name{
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:.03em;
+    color:var(--accent);
+  }
+  .tab .flag{
+    font-size:10px;
+    letter-spacing:.08em;
+    color:var(--ink-dim);
+  }
+  .tab.is-fault .flag{color:var(--alert);}
+  .tab .led{
+    position:absolute;top:10px;right:12px;
+    width:7px;height:7px;border-radius:50%;
+    background:var(--ok);
+    box-shadow:0 0 6px var(--ok);
+  }
+  .tab.is-fault .led{
+    background:var(--alert);
+    box-shadow:0 0 6px var(--alert);
+    animation:blink 1s steps(1) infinite;
+  }
+  .tab.is-active{
+    background:var(--accent);
+    box-shadow:0 0 0 1px var(--accent), 0 8px 24px -8px var(--accent);
+  }
+  .tab.is-active .name,
+  .tab.is-active .flag,
+  .tab.is-active .idx{color:#0a0d16;}
+  .tab.is-active .led{box-shadow:0 0 0 2px rgba(10,13,22,.35);}
+
+  /* ---------- status line ---------- */
+  .statusline{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px clamp(14px,3vw,28px);
+    font-size:12px;
+    color:var(--ink-dim);
+    border-top:1px solid var(--panel-line);
+    border-bottom:1px solid var(--panel-line);
+    margin-top:var(--gap);
+    background:rgba(255,255,255,.015);
+    flex-wrap:wrap;
+  }
+  .statusline .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--ok);flex:0 0 auto;
+  }
+  .statusline.is-fault .dot{
+    background:var(--alert);
+    animation:blink 1s steps(1) infinite;
+  }
+  #statusText{color:var(--ink);flex:1 1 320px;}
+  .statusline a{
+    color:var(--amber);
+    text-decoration:none;
+    border-bottom:1px dotted currentColor;
+    white-space:nowrap;
+  }
+  .statusline a:hover{color:#fff;}
+
+  /* ---------- viewscreen ---------- */
+  .viewscreen{
+    position:relative;
+    flex:1 1 auto;
+    margin:var(--gap) clamp(14px,3vw,28px);
+    border-radius:16px;
+    overflow:hidden;
+    background:#000;
+    border:1px solid var(--panel-line);
+    min-height:360px;
+  }
+  .viewscreen iframe{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    border:0;
+    background:#000;
+  }
+  .viewscreen::after{
+    content:"";
+    position:absolute;inset:0;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.028) 0px,
+      rgba(255,255,255,.028) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode:overlay;
+    opacity:.5;
+  }
+  .flash{
+    position:absolute;inset:0;
+    background:var(--accent-flash,#fff);
+    opacity:0;
+    pointer-events:none;
+  }
+  .flash.on{animation:flashSweep .5s ease-out;}
+
+  /* ---------- footer ---------- */
+  .botbar{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:10px clamp(14px,3vw,28px) 16px;
+    font-size:11px;
+    color:var(--ink-dim);
+    letter-spacing:.04em;
+  }
+  .botbar .cap{
+    width:34px;height:14px;
+    background:var(--panel-line);
+    border-radius:var(--radius) 8px 8px var(--radius);
+    flex:0 0 auto;
+  }
+  .botbar a{text-decoration:none;color:var(--ink-dim);}
+  .botbar a:hover{color:var(--amber);}
+  .botbar .sep{opacity:.4;}
+  .botbar .push{margin-left:auto;}
+
+  @keyframes sweepIn{
+    from{opacity:0; transform:translateX(-10px);}
+    to{opacity:1; transform:translateX(0);}
+  }
+  @keyframes blink{50%{opacity:.15;}}
+  @keyframes flashSweep{
+    0%{opacity:.35;}
+    100%{opacity:0;}
+  }
+
+  @media (max-width:860px){
+    .tabs{grid-template-columns:repeat(3,minmax(100px,1fr));}
+    .brand h1{font-size:13px;}
+    .topbar-fill .caption{display:none;}
+  }
+  @media (max-width:480px){
+    .tabs{grid-template-columns:repeat(2,minmax(100px,1fr));}
+    .viewscreen{min-height:280px;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand"><span class="chip"></span><h1>MODELABILITY</h1></div>
+    <div class="topbar-fill">
+      <span class="caption">USS ENTERPRISE · MULTI‑MODEL RENDER COMPARISON</span>
+      <span class="stardate" id="stardate">STARDATE <b>--</b></span>
+    </div>
+    <div class="topbar-cap"></div>
+  </div>
+
+  <nav class="tabs" id="tabs" aria-label="选择模型"></nav>
+
+  <div class="statusline" id="statusline">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">正在加载…</span>
+    <a id="openNew" href="#" target="_blank" rel="noopener">↗ 新标签页打开</a>
+  </div>
+
+  <main class="viewscreen">
+    <iframe id="viewer" title="model demo" allow="pointer-lock; fullscreen; autoplay" allowfullscreen loading="eager"></iframe>
+    <div class="flash" id="flash"></div>
+  </main>
+
+  <div class="botbar">
+    <span class="cap"></span>
+    <a href="https://github.com/s045pd/modelability" target="_blank" rel="noopener">SOURCE · GITHUB</a>
+    <span class="sep">/</span>
+    <a href="README.md">README</a>
+    <span class="push"></span>
+    <span>点击左上标签切换模型 · 部分场景加载较慢，请耐心等待</span>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  // 模型配置：key 用于 URL hash，path 是相对本页的入口地址
+  var MODELS = [
+    { key:"astra",   name:"ASTRA",   accent:"#ffb454", path:"astra/",
+      flag:"单文件 · ~0.8MB", note:"astra — 单个 index.html 内嵌全部代码/纹理/音效，build.mjs 打包生成，唯一严格满足“单文件”要求的实现。" },
+    { key:"grok46",  name:"GROK 4.6",accent:"#6fb1e0", path:"grok4.6/dist/",
+      flag:"Vite 构建产物", note:"grok4.6 — Vite 工程，演示用 npm run build 产出的 dist/；base 已改为相对路径以适配子目录部署。" },
+    { key:"grok47",  name:"GROK 4.7",accent:"#d9a566", path:"grok4.7/enterprise.html",
+      flag:"单文件", note:"grok4.7 — 单个 enterprise.html（非 index.html），内部用 <script type=\"module\"> + importmap 加载 Three.js。" },
+    { key:"opus46",  name:"OPUS 4.6",accent:"#e0776f", path:"opus4.6/",
+      flag:"多文件 · CDN", note:"opus4.6 — index.html + 独立 js/css，Three.js 走 jsdelivr CDN importmap，静态托管无需改动。" },
+    { key:"opus5",   name:"OPUS 5",  accent:"#9e9be0", path:"opus5/",
+      flag:"多文件 · CDN", note:"opus5 — 原 importmap 指向本机 /node_modules/three，部署会 404，已改为 jsdelivr CDN。场景包含约 1900 扇独立舷窗，加载和首次渲染可能需要 10~20 秒。" },
+    { key:"sonnet5", name:"SONNET 5",accent:"#cc99cc", path:"sonnet5/",
+      flag:"⚠ 已知故障", note:"sonnet5 — ⚠ src/interior/rooms/shell.js:14 调用了未定义的函数 backWindowWall，加载即崩溃白屏（模型自身代码 bug，原样保留未修复，用于对比）。", fault:true }
+  ];
+
+  var tabsEl = document.getElementById("tabs");
+  var iframe = document.getElementById("viewer");
+  var statusline = document.getElementById("statusline");
+  var statusText = document.getElementById("statusText");
+  var openNew = document.getElementById("openNew");
+  var flash = document.getElementById("flash");
+
+  MODELS.forEach(function(m, i){
+    var btn = document.createElement("button");
+    btn.className = "tab" + (m.fault ? " is-fault" : "");
+    btn.style.setProperty("--accent", m.accent);
+    btn.dataset.key = m.key;
+    btn.setAttribute("role", "tab");
+    btn.innerHTML =
+      '<span class="idx">0' + (i+1) + '</span>' +
+      '<span class="name">' + m.name + '</span>' +
+      '<span class="flag">' + m.flag + '</span>' +
+      '<span class="led"></span>';
+    btn.addEventListener("click", function(){ select(m.key, true); });
+    tabsEl.appendChild(btn);
+  });
+
+  function findModel(key){
+    for (var i=0;i<MODELS.length;i++) if (MODELS[i].key === key) return MODELS[i];
+    return null;
+  }
+
+  function select(key, isUserClick){
+    var m = findModel(key) || MODELS[0];
+
+    Array.prototype.forEach.call(tabsEl.children, function(el){
+      el.classList.toggle("is-active", el.dataset.key === m.key);
+    });
+
+    iframe.style.setProperty("--accent-flash", m.accent);
+    flash.style.setProperty("--accent-flash", m.accent);
+    if (isUserClick){
+      flash.classList.remove("on");
+      // 强制重排以重新触发动画
+      void flash.offsetWidth;
+      flash.classList.add("on");
+    }
+
+    iframe.src = m.path;
+    openNew.href = m.path;
+    statusText.textContent = m.note;
+    statusline.classList.toggle("is-fault", !!m.fault);
+
+    location.hash = m.key;
+    try { localStorage.setItem("modelability:last", m.key); } catch(e){}
+  }
+
+  function initialKey(){
+    var fromHash = (location.hash || "").replace("#","");
+    if (findModel(fromHash)) return fromHash;
+    try {
+      var saved = localStorage.getItem("modelability:last");
+      if (findModel(saved)) return saved;
+    } catch(e){}
+    return MODELS[0].key;
+  }
+
+  window.addEventListener("hashchange", function(){
+    var key = (location.hash || "").replace("#","");
+    if (findModel(key)) select(key, false);
+  });
+
+  select(initialKey(), false);
+
+  // 装饰性星历读数：仅作氛围展示，非官方公式
+  function paintStardate(){
+    var now = new Date();
+    var dayStart = new Date(now.getFullYear(),0,1);
+    var dayOfYear = (now - dayStart) / 86400000; // 含小数，让读数持续走动
+    var daysInYear = ((now.getFullYear() % 4 === 0) ? 366 : 365);
+    // 纯装饰性读数：映射进 TNG 时代常见的 4 万区间，不对应真实历法
+    var sd = 47000 + (dayOfYear / daysInYear) * 1000;
+    document.getElementById("stardate").innerHTML =
+      "STARDATE <b>" + sd.toFixed(2) + "</b>";
+  }
+  paintStardate();
+  setInterval(paintStardate, 60000);
+})();
+</script>
+</body>
+</html>

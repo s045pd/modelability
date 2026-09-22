@@ -11,5 +11,8 @@ node_modules/
 .playwright-browsers/
 *.log
 
+# Claude Code 会话内部状态（本机锁文件等），非项目内容
+/.claude/
+
 # 主题跑偏，本轮暂不纳入模型对比（鹈鹕骑自行车，非企业号飞船）
 gemini3.8flash/
