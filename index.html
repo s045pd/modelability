@@ -342,7 +342,7 @@
     { key:"opus5",   name:"OPUS 5",  accent:"#9e9be0", path:"opus5/",
       flag:"多文件 · CDN", note:"opus5 — 原 importmap 指向本机 /node_modules/three，部署会 404，已改为 jsdelivr CDN。场景包含约 1900 扇独立舷窗，加载和首次渲染可能需要 10~20 秒。" },
     { key:"sonnet5", name:"SONNET 5",accent:"#cc99cc", path:"sonnet5/",
-      flag:"⚠ 已知故障", note:"sonnet5 — ⚠ src/interior/rooms/shell.js:14 调用了未定义的函数 backWindowWall，加载即崩溃白屏（模型自身代码 bug，原样保留未修复，用于对比）。", fault:true }
+      flag:"多文件 · CDN", note:"sonnet5 — importmap 已改为 jsdelivr CDN；原版 src/interior/rooms/shell.js:14 调用的未定义函数 backWindowWall（后墙开窗）已补上，「舰长舱」「观景休息室」窗户均正常渲染。" }
   ];
 
   var tabsEl = document.getElementById("tabs");

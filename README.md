@@ -13,7 +13,7 @@
 | [grok4.6](grok4.6/) | [Demo](https://s045pd.github.io/modelability/grok4.6/dist/) | ❌ 否（`index.html` + 独立 `src/*.js`/`*.css`，需 Vite 开发服务器） | 已用 `npm run build` 产出 `dist/`，并把 `vite.config.js` 的 `base` 改成 `'./'` 让打包产物支持部署在子路径下 |
 | [opus4.6](opus4.6/) | [Demo](https://s045pd.github.io/modelability/opus4.6/) | ❌ 否（`index.html` + `js/*.js` + `styles.css`） | Three.js 走 CDN importmap，静态托管无需改动 |
 | [opus5](opus5/) | [Demo](https://s045pd.github.io/modelability/opus5/) | ❌ 否（`index.html` + `src/**/*.js`） | 原版 importmap 指向本机 `/node_modules/three/...`，部署到子路径会 404；已改成 jsdelivr CDN（对应本地锁定的 `three@0.169.0`） |
-| [sonnet5](sonnet5/) | [Demo](https://s045pd.github.io/modelability/sonnet5/) | ❌ 否（`index.html` + `src/**/*.js`） | ⚠️ **已知问题**：`src/interior/rooms/shell.js:14` 调用了未定义的函数 `backWindowWall`，加载时报 `构建失败：BACKWINDOWWALL IS NOT DEFINED` 并白屏。已把 importmap 改成 jsdelivr CDN（`three@0.186.0`）修好了部署路径问题，但这个函数缺失是模型自身代码的 bug，未做修复，原样保留用于对比 |
+| [sonnet5](sonnet5/) | [Demo](https://s045pd.github.io/modelability/sonnet5/) | ❌ 否（`index.html` + `src/**/*.js`） | 已把 importmap 改成 jsdelivr CDN（`three@0.186.0`）修好部署路径问题；另外原版 `src/interior/rooms/shell.js:14` 调用了从未定义的函数 `backWindowWall`（模型自身代码 bug，加载即崩溃白屏），已补上该函数（后墙开窗+窗框+防撞玻璃），确认「舰长舱」「观景休息室」两处窗户均正常渲染 |
 | ~~gemini3.8flash~~ | — | — | 目录内容是"鹈鹕骑自行车"动画，和其他目录的"企业号飞船"主题不一致，本轮对比暂未收录，见 `.gitignore` |
 
 ## 结构说明

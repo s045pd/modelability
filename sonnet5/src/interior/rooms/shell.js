@@ -27,6 +27,30 @@ export function roomShell(kit, { w, d, outside = null, inside = null, trim = nul
   if (name) kit.zone(name, deck, 0, d / 2, w / 2, d / 2, y0, y0 + h + 0.2);
 }
 
+// 后墙开大窗：直接看到真实的舰外场景（行星 / 舰体）
+function backWindowWall(kit, { w, d, y0, h, win, outside, inside }) {
+  const M = kit.M;
+  const ww = win.w, sill = win.sill ?? 0.7, top = win.top ?? 2.7;
+  const side = (w - ww) / 2;
+  for (const s of [-1, 1]) {
+    kit.box(inside, [s * (ww / 2 + side / 2), y0 + h / 2, d - 0.08], [side, h, 0.16]);
+    kit.box(outside, [s * (ww / 2 + side / 2), y0 + h / 2, d + 0.08], [side, h, 0.16]);
+  }
+  kit.box(inside, [0, y0 + sill / 2, d - 0.08], [ww, sill, 0.16]);
+  kit.box(outside, [0, y0 + sill / 2, d + 0.08], [ww, sill, 0.16]);
+  kit.box(inside, [0, y0 + top + (h - top) / 2, d - 0.08], [ww, h - top, 0.16]);
+  kit.box(outside, [0, y0 + top + (h - top) / 2, d + 0.08], [ww, h - top, 0.16]);
+  kit.wall(0, d, w / 2, 0.16, y0, y0 + h);
+  // 窗框、玻璃与立柱
+  kit.box(M.steelDark, [0, y0 + sill, d - 0.12], [ww + 0.2, 0.12, 0.3]);
+  kit.box(M.steelDark, [0, y0 + top, d - 0.12], [ww + 0.2, 0.12, 0.3]);
+  for (const s of [-1, 1]) kit.box(M.steelDark, [s * (ww / 2), y0 + (sill + top) / 2, d - 0.12], [0.14, top - sill, 0.3]);
+  const n = Math.max(0, Math.round(ww / 3) - 1);
+  for (let i = 1; i <= n; i++) kit.box(M.steelDark, [-ww / 2 + (ww / (n + 1)) * i, y0 + (sill + top) / 2, d - 0.1], [0.1, top - sill, 0.2]);
+  kit.box(M.glass, [0, y0 + (sill + top) / 2, d - 0.02], [ww, top - sill, 0.02]);
+  kit.box(M.consoleGold, [0, y0 + sill + 0.08, d - 0.3], [ww, 0.05, 0.3]);
+}
+
 export function setSpawn(ctx, key, x, z, faceLocalZ = true) {
   const { kit } = ctx;
   const p = kit.toWorld(x, 0, z);
