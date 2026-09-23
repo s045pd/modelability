@@ -353,6 +353,8 @@
       flag:"多文件 · CDN", note:"opus5（发布于 2026-07-24）— 原 importmap 指向本机 /node_modules/three，部署会 404，已改为 jsdelivr CDN。场景包含约 1900 扇独立舷窗，加载和首次渲染可能需要 10~20 秒。" },
     { key:"sonnet5", name:"SONNET 5",accent:"#cc99cc", path:"sonnet5/", date:"2026-06-30",
       flag:"多文件 · CDN", note:"sonnet5（发布于 2026-06-30）— importmap 已改为 jsdelivr CDN；原版 src/interior/rooms/shell.js:14 调用的未定义函数 backWindowWall（后墙开窗）已补上，「舰长舱」「观景休息室」窗户均正常渲染。" },
+    { key:"doubao21", name:"DOUBAO 2.1 PRO",accent:"#ff8a3d", path:"doubao2.1pro/enterprise-d/uss-enterprise-ncc1701d.html", date:"2026-06-23",
+      flag:"单文件 · CDN", note:"doubao2.1pro（豆包大模型 2.1 Pro，发布于 2026-06-23）— 单个 uss-enterprise-ncc1701d.html，Three.js r128 经 jsdelivr CDN 以传统 <script> 方式引入，LCARS 风格 UI，静态托管无需改动。" },
     { key:"gemini31", name:"GEMINI 3.1 PRO",accent:"#4a90d9", path:"gemini3.1pro/enterprise.html", date:"2026-02-19",
       flag:"单文件 · CDN", note:"gemini3.1pro（发布于 2026-02-19）— 单个 enterprise.html，importmap 经 unpkg 加载 Three.js。" },
     { key:"opus46",  name:"OPUS 4.6",accent:"#e0776f", path:"opus4.6/", date:"2026-02-05",
@@ -391,13 +393,18 @@
       moved = false;
       startX = e.pageX;
       startScroll = tabsEl.scrollLeft;
-      tabsEl.classList.add("is-dragging");
+      // 注意：这里不能立刻加 is-dragging —— CSS 里 .tabs.is-dragging .tab
+      // 会让按钮瞬间 pointer-events:none，导致单纯点击（未拖动）时
+      // mouseup/click 的事件目标穿透到容器本身，按钮的 click 监听器永远收不到事件
     });
     window.addEventListener("mousemove", function(e){
       if (!isDown) return;
       var dx = e.pageX - startX;
-      if (Math.abs(dx) > 4) moved = true;
-      tabsEl.scrollLeft = startScroll - dx;
+      if (!moved && Math.abs(dx) > 4){
+        moved = true;
+        tabsEl.classList.add("is-dragging");
+      }
+      if (moved) tabsEl.scrollLeft = startScroll - dx;
     });
     window.addEventListener("mouseup", function(){
       if (!isDown) return;

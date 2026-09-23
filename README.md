@@ -24,6 +24,7 @@
 | 2026-08-12 | [grok4.6](grok4.6/) | [Demo](https://s045pd.github.io/modelability/grok4.6/dist/) | ❌ 否（`index.html` + 独立 `src/*.js`/`*.css`，需 Vite 开发服务器） | 已用 `npm run build` 产出 `dist/`，并把 `vite.config.js` 的 `base` 改成 `'./'` 让打包产物支持部署在子路径下 |
 | 2026-07-24 | [opus5](opus5/) | [Demo](https://s045pd.github.io/modelability/opus5/) | ❌ 否（`index.html` + `src/**/*.js`） | 原版 importmap 指向本机 `/node_modules/three/...`，部署到子路径会 404；已改成 jsdelivr CDN（对应本地锁定的 `three@0.169.0`） |
 | 2026-06-30 | [sonnet5](sonnet5/) | [Demo](https://s045pd.github.io/modelability/sonnet5/) | ❌ 否（`index.html` + `src/**/*.js`） | 已把 importmap 改成 jsdelivr CDN（`three@0.186.0`）修好部署路径问题；另外原版 `src/interior/rooms/shell.js:14` 调用了从未定义的函数 `backWindowWall`（模型自身代码 bug，加载即崩溃白屏），已补上该函数（后墙开窗+窗框+防撞玻璃），确认「舰长舱」「观景休息室」两处窗户均正常渲染 |
+| 2026-06-23 | [doubao2.1pro](doubao2.1pro/)（豆包大模型 2.1 Pro） | [Demo](https://s045pd.github.io/modelability/doubao2.1pro/enterprise-d/uss-enterprise-ncc1701d.html) | ✅ 是（`uss-enterprise-ncc1701d.html` 单文件，Three.js r128 经 jsdelivr CDN 以传统 `<script>` 引入） | LCARS 风格界面，文件名不是 `index.html`，需要走完整路径访问 |
 | 2026-02-19 | [gemini3.1pro](gemini3.1pro/) | [Demo](https://s045pd.github.io/modelability/gemini3.1pro/enterprise.html) | ✅ 是（`enterprise.html` 单文件，内部用 `<script type="module">` + importmap） | Three.js 经 unpkg 加载 |
 | 2026-02-05 | [opus4.6](opus4.6/) | [Demo](https://s045pd.github.io/modelability/opus4.6/) | ❌ 否（`index.html` + `js/*.js` + `styles.css`） | Three.js 走 CDN importmap，静态托管无需改动 |
 
@@ -34,7 +35,7 @@
 1. **路径修正**：把指向站点根目录的绝对路径（`/src/...`、`/node_modules/...`）改成相对路径或 CDN 地址（`grok4.6`、`opus5`）。
 2. **构建产物**：`grok4.6` 基于 Vite，本地开发用的根 `index.html` 需要 `vite dev` 才能跑，故演示用的是 `npm run build` 产出的 `dist/`。
 
-单文件类型的模型（`astra`、`grok4.7`、`gemini3.1pro`、`gemini3.8flash`）不需要任何改动，本地双击 `index.html` / `enterprise.html` 即可直接运行；其余多文件结构的模型需要通过 HTTP 服务器访问（本地可用 `python3 -m http.server` 或各目录自带的 `npm start`），直接用 `file://` 打开会因 ES module 的跨域限制白屏。
+单文件类型的模型（`astra`、`grok4.7`、`gemini3.1pro`、`gemini3.8flash`、`doubao2.1pro`）不需要任何改动，本地双击 `index.html` / `enterprise.html` / `uss-enterprise-ncc1701d.html` 即可直接运行；其余多文件结构的模型需要通过 HTTP 服务器访问（本地可用 `python3 -m http.server` 或各目录自带的 `npm start`），直接用 `file://` 打开会因 ES module 的跨域限制白屏。
 
 ## 本地预览
 
