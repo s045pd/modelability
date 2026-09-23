@@ -18,8 +18,10 @@
 
 | 发布日期 | 模型目录 | 在线演示 | 是否单 HTML 文件 | 备注 |
 |---|---|---|---|---|
+| 2026-09-22 | [gpt6sol](gpt6sol/)（GPT-6 Sol） | [Demo](https://s045pd.github.io/modelability/gpt6sol/enterprise.html) | ✅ 是（`enterprise.html` 约 0.7MB，Three.js 压缩后直接内嵌 `<script>`，无外部依赖） | GPT-6 Astra 之后推出的平价档位，主打更强推理 |
+| 2026-09-22 | [gpt6luna](gpt6luna/)（GPT-6 Luna） | [Demo](https://s045pd.github.io/modelability/gpt6luna/) | ✅ 是（单个 `index.html`，importmap 经 jsdelivr CDN 加载 Three.js） | 比 Sol 更轻量、面向高并发低延迟场景的档位 |
 | 2026-09-21 | [grok4.7](grok4.7/) | [Demo](https://s045pd.github.io/modelability/grok4.7/enterprise.html) | ✅ 是（`enterprise.html` 单文件，内部用 `<script type="module">` + importmap） | 文件名不是 `index.html`，需要走完整路径访问 |
-| 2026-09-03 | [astra](astra/)（GPT-6 Astra） | [Demo](https://s045pd.github.io/modelability/astra/) | ✅ 是（`index.html` 约 0.8MB，代码/纹理/音效全内嵌，`build.mjs` 打包生成） | 唯一严格满足"单文件"要求且不依赖模块加载的实现 |
+| 2026-09-03 | [gpt6astra](gpt6astra/)（GPT-6 Astra） | [Demo](https://s045pd.github.io/modelability/gpt6astra/) | ✅ 是（`index.html` 约 0.8MB，代码/纹理/音效全内嵌，`build.mjs` 打包生成） | GPT-6 系列旗舰首发，唯一严格满足"单文件"要求且不依赖模块加载的实现 |
 | 2026-09-02 | [gemini3.8flash](gemini3.8flash/) | [Demo](https://s045pd.github.io/modelability/gemini3.8flash/) | ✅ 是（单个 `index.html`，Three.js r128 经 cdnjs/jsdelivr `<script>` 引入） | 首版内容跑偏成"鹈鹕骑自行车"，已重做为企业号飞船主题，静态托管无需改动 |
 | 2026-08-12 | [grok4.6](grok4.6/) | [Demo](https://s045pd.github.io/modelability/grok4.6/dist/) | ❌ 否（`index.html` + 独立 `src/*.js`/`*.css`，需 Vite 开发服务器） | 已用 `npm run build` 产出 `dist/`，并把 `vite.config.js` 的 `base` 改成 `'./'` 让打包产物支持部署在子路径下 |
 | 2026-07-24 | [opus5](opus5/) | [Demo](https://s045pd.github.io/modelability/opus5/) | ❌ 否（`index.html` + `src/**/*.js`） | 原版 importmap 指向本机 `/node_modules/three/...`，部署到子路径会 404；已改成 jsdelivr CDN（对应本地锁定的 `three@0.169.0`） |
@@ -35,7 +37,7 @@
 1. **路径修正**：把指向站点根目录的绝对路径（`/src/...`、`/node_modules/...`）改成相对路径或 CDN 地址（`grok4.6`、`opus5`）。
 2. **构建产物**：`grok4.6` 基于 Vite，本地开发用的根 `index.html` 需要 `vite dev` 才能跑，故演示用的是 `npm run build` 产出的 `dist/`。
 
-单文件类型的模型（`astra`、`grok4.7`、`gemini3.1pro`、`gemini3.8flash`、`doubao2.1pro`）不需要任何改动，本地双击 `index.html` / `enterprise.html` / `uss-enterprise-ncc1701d.html` 即可直接运行；其余多文件结构的模型需要通过 HTTP 服务器访问（本地可用 `python3 -m http.server` 或各目录自带的 `npm start`），直接用 `file://` 打开会因 ES module 的跨域限制白屏。
+单文件类型的模型（`gpt6astra`、`gpt6sol`、`gpt6luna`、`grok4.7`、`gemini3.1pro`、`gemini3.8flash`、`doubao2.1pro`）不需要任何改动，本地双击 `index.html` / `enterprise.html` / `uss-enterprise-ncc1701d.html` 即可直接运行；其余多文件结构的模型需要通过 HTTP 服务器访问（本地可用 `python3 -m http.server` 或各目录自带的 `npm start`），直接用 `file://` 打开会因 ES module 的跨域限制白屏。
 
 ## 本地预览
 

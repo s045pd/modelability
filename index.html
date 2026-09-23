@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MODELABILITY — 舰队渲染对比控制台</title>
-<meta name="description" content="同一提示词，六个模型各自生成的 USS Enterprise 3D 场景，一屏切换对比。">
+<meta name="description" content="同一提示词，多个模型各自生成的 USS Enterprise 3D 场景，一屏切换对比。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Michroma&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -341,10 +341,14 @@
   // 模型配置：key 用于 URL hash，path 是相对本页的入口地址
   // 标签顺序按各模型的公开发布日期排列，最新的在最左边
   var MODELS = [
+    { key:"gpt6sol",  name:"GPT-6 SOL",accent:"#ffd35c", path:"gpt6sol/enterprise.html", date:"2026-09-22",
+      flag:"单文件 · ~0.7MB", note:"gpt6sol（GPT-6 Sol，发布于 2026-09-22，紧随 GPT-6 Astra 之后的平价档位）— 单个 enterprise.html，Three.js 以压缩后的 <script> 直接内嵌页面，无外部依赖。" },
+    { key:"gpt6luna", name:"GPT-6 LUNA",accent:"#b8c9e0", path:"gpt6luna/index.html", date:"2026-09-22",
+      flag:"单文件 · CDN", note:"gpt6luna（GPT-6 Luna，发布于 2026-09-22，比 Sol 更轻量、面向高并发低延迟场景的档位）— 单个 index.html，importmap 经 jsdelivr CDN 加载 Three.js。" },
     { key:"grok47",  name:"GROK 4.7",accent:"#d9a566", path:"grok4.7/enterprise.html", date:"2026-09-21",
       flag:"单文件", note:"grok4.7（发布于 2026-09-21）— 单个 enterprise.html（非 index.html），内部用 <script type=\"module\"> + importmap 加载 Three.js。" },
-    { key:"astra",   name:"ASTRA (GPT-6)",accent:"#ffb454", path:"astra/", date:"2026-09-03",
-      flag:"单文件 · ~0.8MB", note:"astra（GPT-6 Astra，发布于 2026-09-03）— 单个 index.html 内嵌全部代码/纹理/音效，build.mjs 打包生成，唯一严格满足“单文件”要求的实现。" },
+    { key:"gpt6astra", name:"GPT-6 ASTRA",accent:"#ffb454", path:"gpt6astra/", date:"2026-09-03",
+      flag:"单文件 · ~0.8MB", note:"gpt6astra（GPT-6 Astra，发布于 2026-09-03，GPT-6 系列的旗舰首发）— 单个 index.html 内嵌全部代码/纹理/音效，build.mjs 打包生成，唯一严格满足“单文件”要求的实现。" },
     { key:"gemini38", name:"GEMINI 3.8 FLASH",accent:"#5fd4a3", path:"gemini3.8flash/", date:"2026-09-02",
       flag:"单文件 · CDN", note:"gemini3.8flash（发布于 2026-09-02）— 单个 index.html，Three.js r128 经 cdnjs/jsdelivr 引入，静态托管无需改动。" },
     { key:"grok46",  name:"GROK 4.6",accent:"#6fb1e0", path:"grok4.6/dist/", date:"2026-08-12",
